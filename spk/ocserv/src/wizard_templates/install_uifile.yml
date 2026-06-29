@@ -1,0 +1,34 @@
+NETWORK_TITLE: "Network"
+
+VPN_PORT_DESCRIPTION: "VPN listening port (TCP and UDP). Port 443 offers maximum client compatibility but conflicts with DSM HTTPS — the default 4433 avoids this."
+VPN_PORT_LABEL: "VPN Port"
+VPN_PORT_ERRORTEXT: "Enter a valid port number (1–65535)."
+
+SERVER_CERT_DESCRIPTION: "Absolute path to the server TLS certificate (PEM format). You can use Synology's Let's Encrypt certificate at /usr/syno/etc/certificate/_archive/<id>/fullchain.pem. Leave blank to configure after installation."
+SERVER_CERT_LABEL: "Server Certificate Path"
+
+SERVER_KEY_DESCRIPTION: "Absolute path to the server TLS private key (PEM format)."
+SERVER_KEY_LABEL: "Server Private Key Path"
+
+AUTH_TITLE: "Authentication"
+
+AUTH_METHOD_DESCRIPTION: "Choose how VPN users will authenticate."
+AUTH_METHOD_LABEL: "Authentication Method"
+AUTH_METHOD_LOCAL: "Local password file (ocpasswd)"
+AUTH_METHOD_RADIUS: "RADIUS server"
+
+RADIUS_TITLE: "RADIUS Settings"
+
+RADIUS_NOTES: "<b>Fill in this page only if you selected RADIUS authentication.</b> Leave blank when using the local password file. RADIUS accounting is not supported on Synology NAS."
+
+RADIUS_HOST_DESCRIPTION: "Hostname or IP address of your RADIUS server."
+RADIUS_HOST_LABEL: "RADIUS Server"
+
+RADIUS_PORT_DESCRIPTION: "RADIUS authentication port."
+RADIUS_PORT_LABEL: "Port"
+
+RADIUS_SECRET_DESCRIPTION: "Shared secret configured on your RADIUS server for this NAS client."
+RADIUS_SECRET_LABEL: "Shared Secret"
+
+RADIUS_NASID_DESCRIPTION: "NAS identifier sent to the RADIUS server. Leave blank to use the NAS hostname."
+RADIUS_NASID_LABEL: "NAS Identifier"

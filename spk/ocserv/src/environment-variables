@@ -1,0 +1,7 @@
+# ocserv runtime environment variables
+# This file is loaded by service-setup.sh before starting ocserv.
+# Uncomment and edit lines to override defaults.
+# Restart the package after changes.
+
+# Override the config file path:
+#OCSERV_CONFIG=/var/packages/ocserv/var/etc/ocserv.conf

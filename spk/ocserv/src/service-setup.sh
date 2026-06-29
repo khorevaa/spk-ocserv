@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Paths resolved from spksrc framework environment variables
+# Paths
 VAR_DIR="${SYNOPKG_PKGVAR}"
 ETC_DIR="${VAR_DIR}/etc"
 LIB_DIR="${VAR_DIR}/lib"
@@ -11,15 +11,22 @@ RADIUS_CFG="${ETC_DIR}/radiusclient.conf"
 RADIUS_SERVERS="${ETC_DIR}/radius.servers"
 PASSWD_FILE="${LIB_DIR}/ocpasswd"
 
-# ── Service command (used by the spksrc start/stop framework) ─────────────────
-SERVICE_COMMAND="${SYNOPKG_PKGDEST}/bin/ocserv --config ${CFG_FILE} --foreground"
-SVC_BACKGROUND=y
-SVC_WRITE_PID=y
+INST_ETC="/var/packages/${SYNOPKG_PKGNAME}/etc"
+INST_VARIABLES="${INST_ETC}/installer-variables"
+ENV_VARIABLES="${SYNOPKG_PKGVAR}/environment-variables"
 
-# ── Lifecycle hooks ───────────────────────────────────────────────────────────
+SVC_BACKGROUND=yes
+SVC_WRITE_PID=yes
 
-service_postinst() {
+service_postinst ()
+{
     install -m 755 -d "${ETC_DIR}" "${LIB_DIR}" "${LOG_DIR}"
+    install -m 755 -d "${INST_ETC}"
+
+    # Save wizard values for use in service_prestart
+    if [ -n "${wizard_vpn_port}" ]; then
+        echo "VPN_PORT=${wizard_vpn_port}" > "${INST_VARIABLES}"
+    fi
 
     # Write ocserv.conf from template on first install
     if [ ! -f "${CFG_FILE}" ]; then
@@ -43,8 +50,8 @@ service_postinst() {
     # Write radiusclient.conf from template
     if [ ! -f "${RADIUS_CFG}" ]; then
         cp "${SYNOPKG_PKGDEST}/etc/radiusclient.conf.tpl" "${RADIUS_CFG}"
-        sed -i "s|@@RADIUS_HOST@@|${wizard_radius_host:-127.0.0.1}|g"           "${RADIUS_CFG}"
-        sed -i "s|@@RADIUS_AUTH_PORT@@|${wizard_radius_auth_port:-1812}|g"       "${RADIUS_CFG}"
+        sed -i "s|@@RADIUS_HOST@@|${wizard_radius_host:-127.0.0.1}|g"     "${RADIUS_CFG}"
+        sed -i "s|@@RADIUS_AUTH_PORT@@|${wizard_radius_auth_port:-1812}|g" "${RADIUS_CFG}"
     fi
 
     # Write radius.servers: host:port <tab> secret [<tab> nas-id]
@@ -70,9 +77,31 @@ service_postinst() {
     fi
 }
 
-service_prestart() {
+export_variables_from_file ()
+{
+    if [ -n "$1" ] && [ -r "$1" ]; then
+        while read -r _line; do
+            if [ "$(echo "${_line}" | grep -v '^[[:space:]]*#')" != "" ]; then
+                _key="$(echo "${_line}"   | cut -f1 -d=)"
+                _value="$(echo "${_line}" | cut -f2- -d=)"
+                export "${_key}=${_value}"
+            fi
+        done < "$1"
+    fi
+}
+
+service_prestart ()
+{
     if [ ! -f "${CFG_FILE}" ]; then
         echo "Configuration file missing: ${CFG_FILE}" >&2
         return 1
     fi
+
+    # Reload installer variables (e.g. VPN_PORT)
+    export_variables_from_file "${INST_VARIABLES}"
+
+    # Allow user to override env vars at runtime
+    export_variables_from_file "${ENV_VARIABLES}"
+
+    SERVICE_COMMAND="${SYNOPKG_PKGDEST}/bin/ocserv --config ${CFG_FILE} --foreground"
 }

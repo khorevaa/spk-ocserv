@@ -20,8 +20,8 @@ SERVICE_PORT         = 4433
 SERVICE_PORT_PROTOCOL = https
 SERVICE_PORT_TITLE   = OpenConnect VPN
 
-FWPORTS     = src/ocserv.sc
-WIZARDS_DIR = src/wizard_templates/
+FWPORTS              = src/ocserv.sc
+WIZARDS_TEMPLATES_DIR = src/wizard_templates
 
 POST_STRIP_TARGET = ocserv_extra_install
 
@@ -34,6 +34,8 @@ include ../../mk/spksrc.spk.mk
 .PHONY: ocserv_extra_install
 
 ocserv_extra_install:
-	install -m 755 -d $(STAGING_DIR)/etc
-	install -m 640 src/ocserv.conf.tpl          $(STAGING_DIR)/etc/ocserv.conf.tpl
-	install -m 640 src/radiusclient.conf.tpl     $(STAGING_DIR)/etc/radiusclient.conf.tpl
+	@install -m 755 -d $(STAGING_DIR)/etc
+	@install -m 755 -d $(STAGING_DIR)/var
+	@install -m 640 src/ocserv.conf.tpl          $(STAGING_DIR)/etc/ocserv.conf.tpl
+	@install -m 640 src/radiusclient.conf.tpl     $(STAGING_DIR)/etc/radiusclient.conf.tpl
+	@install -m 644 src/environment-variables     $(STAGING_DIR)/var/environment-variables
