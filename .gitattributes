@@ -1,0 +1,10 @@
+# Ensure shell scripts always use LF (required by Synology ash/busybox)
+*.sh    text eol=lf
+Makefile text eol=lf
+PLIST   text eol=lf
+digests text eol=lf
+*.conf  text eol=lf
+*.tpl   text eol=lf
+*.sc    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
