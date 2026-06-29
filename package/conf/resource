@@ -1,0 +1,16 @@
+{
+  "usr-local-linker": {
+    "lib": [],
+    "bin": [
+      "bin/ocserv",
+      "bin/ocpasswd",
+      "bin/occtl"
+    ],
+    "etc": []
+  },
+  "port-config": {
+    "protocol": "tcp",
+    "port": "@@VPN_PORT@@",
+    "dsm-traverse": "yes"
+  }
+}

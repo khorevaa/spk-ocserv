@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# Synology package installer script.
+# Called by Package Center for install / upgrade / uninstall events.
+
+PKG_DIR="${SYNOPKG_PKGDEST}"
+VAR_DIR="${SYNOPKG_PKGVAR}"
+ETC_DIR="${VAR_DIR}/etc"
+LIB_DIR="${VAR_DIR}/lib"
+LOG_DIR="${VAR_DIR}/log"
+RUN_DIR="${VAR_DIR}/run"
+
+CFG_FILE="${ETC_DIR}/ocserv.conf"
+PASSWD_FILE="${LIB_DIR}/ocpasswd"
+
+preinst() {
+    return 0
+}
+
+postinst() {
+    install -m 755 -d "${ETC_DIR}" "${LIB_DIR}" "${LOG_DIR}" "${RUN_DIR}"
+
+    # Write config from template only on fresh install
+    if [ ! -f "${CFG_FILE}" ]; then
+        cp "${PKG_DIR}/etc/ocserv.conf.tpl" "${CFG_FILE}"
+
+        # Substitute values collected by the installation wizard
+        VPN_PORT="${wizard_vpn_port:-443}"
+        SERVER_CERT="${wizard_server_cert:-}"
+        SERVER_KEY="${wizard_server_key:-}"
+        CA_CERT="${wizard_ca_cert:-}"
+
+        sed -i "s|@@VPN_PORT@@|${VPN_PORT}|g"         "${CFG_FILE}"
+        sed -i "s|@@SERVER_CERT@@|${SERVER_CERT}|g"   "${CFG_FILE}"
+        sed -i "s|@@SERVER_KEY@@|${SERVER_KEY}|g"     "${CFG_FILE}"
+        sed -i "s|@@CA_CERT@@|${CA_CERT}|g"           "${CFG_FILE}"
+    fi
+
+    # Create empty password file for plain-text auth
+    if [ ! -f "${PASSWD_FILE}" ]; then
+        touch "${PASSWD_FILE}"
+        chmod 640 "${PASSWD_FILE}"
+    fi
+
+    return 0
+}
+
+preuninst() {
+    return 0
+}
+
+postuninst() {
+    return 0
+}
+
+preupgrade() {
+    return 0
+}
+
+postupgrade() {
+    return 0
+}
+
+case "$1" in
+    pre-install)    preinst    ;;
+    post-install)   postinst   ;;
+    pre-uninstall)  preuninst  ;;
+    post-uninstall) postuninst ;;
+    pre-upgrade)    preupgrade ;;
+    post-upgrade)   postupgrade ;;
+    *)
+        echo "Usage: $0 {pre-install|post-install|pre-uninstall|post-uninstall|pre-upgrade|post-upgrade}"
+        exit 1
+        ;;
+esac

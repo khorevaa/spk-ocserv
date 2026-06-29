@@ -1,0 +1,58 @@
+[
+  {
+    "step_title": "OpenConnect VPN — Basic Setup",
+    "items": [
+      {
+        "type": "textfield",
+        "desc": "VPN listening port (TCP and UDP). Port 443 is recommended for maximum client compatibility but may conflict with DSM HTTPS — change one of them in Control Panel → Network if needed.",
+        "subitems": [
+          {
+            "key": "wizard_vpn_port",
+            "desc": "VPN Port",
+            "defaultValue": "4433",
+            "validator": {
+              "allowBlank": false,
+              "regex": {
+                "expr": "/^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/",
+                "errorText": "Enter a valid port number (1–65535)."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "textfield",
+        "desc": "Absolute path to the server TLS certificate file (PEM format). You can use a Synology-managed Let's Encrypt certificate or your own. Leave blank to configure manually after installation.",
+        "subitems": [
+          {
+            "key": "wizard_server_cert",
+            "desc": "Server Certificate Path",
+            "defaultValue": ""
+          }
+        ]
+      },
+      {
+        "type": "textfield",
+        "desc": "Absolute path to the server TLS private key file (PEM format).",
+        "subitems": [
+          {
+            "key": "wizard_server_key",
+            "desc": "Server Private Key Path",
+            "defaultValue": ""
+          }
+        ]
+      },
+      {
+        "type": "textfield",
+        "desc": "Absolute path to the CA certificate bundle (PEM format). Required for certificate-based client authentication; leave blank for password-only auth.",
+        "subitems": [
+          {
+            "key": "wizard_ca_cert",
+            "desc": "CA Certificate Path",
+            "defaultValue": ""
+          }
+        ]
+      }
+    ]
+  }
+]

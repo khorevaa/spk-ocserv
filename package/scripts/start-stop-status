@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# Synology start/stop/status script for ocserv.
+
+PKG_DIR="${SYNOPKG_PKGDEST}"
+VAR_DIR="${SYNOPKG_PKGVAR}"
+
+CFG_FILE="${VAR_DIR}/etc/ocserv.conf"
+PID_FILE="${VAR_DIR}/run/ocserv.pid"
+LOG_FILE="${VAR_DIR}/log/ocserv.log"
+
+DAEMON="${PKG_DIR}/bin/ocserv"
+DAEMON_ARGS="--config ${CFG_FILE} --pid-file ${PID_FILE} --foreground"
+
+start_daemon() {
+    if [ ! -f "${CFG_FILE}" ]; then
+        echo "Configuration file missing: ${CFG_FILE}" >&2
+        return 1
+    fi
+
+    if [ ! -f "${PKG_DIR}/etc/certs/server-cert.pem" ] && \
+       ! grep -q "^server-cert" "${CFG_FILE}"; then
+        echo "No server certificate configured. Edit ${CFG_FILE} first." >&2
+        return 1
+    fi
+
+    echo "Starting ocserv..."
+    "${DAEMON}" ${DAEMON_ARGS} >> "${LOG_FILE}" 2>&1 &
+    local pid=$!
+    echo "${pid}" > "${PID_FILE}"
+    sleep 1
+
+    if kill -0 "${pid}" 2>/dev/null; then
+        echo "ocserv started (PID ${pid})"
+        return 0
+    else
+        echo "ocserv failed to start — check ${LOG_FILE}" >&2
+        rm -f "${PID_FILE}"
+        return 1
+    fi
+}
+
+stop_daemon() {
+    if [ ! -f "${PID_FILE}" ]; then
+        echo "ocserv is not running (no PID file)"
+        return 0
+    fi
+
+    local pid
+    pid=$(cat "${PID_FILE}")
+    echo "Stopping ocserv (PID ${pid})..."
+    kill "${pid}" 2>/dev/null
+    local waited=0
+    while kill -0 "${pid}" 2>/dev/null && [ "${waited}" -lt 10 ]; do
+        sleep 1
+        waited=$((waited + 1))
+    done
+    kill -9 "${pid}" 2>/dev/null
+    rm -f "${PID_FILE}"
+    echo "ocserv stopped"
+    return 0
+}
+
+status_daemon() {
+    if [ ! -f "${PID_FILE}" ]; then
+        echo "ocserv is not running"
+        return 1
+    fi
+    local pid
+    pid=$(cat "${PID_FILE}")
+    if kill -0 "${pid}" 2>/dev/null; then
+        echo "ocserv is running (PID ${pid})"
+        return 0
+    else
+        echo "ocserv is not running (stale PID file)"
+        rm -f "${PID_FILE}"
+        return 1
+    fi
+}
+
+case "$1" in
+    start)  start_daemon  ;;
+    stop)   stop_daemon   ;;
+    status) status_daemon ;;
+    *)
+        echo "Usage: $0 {start|stop|status}"
+        exit 1
+        ;;
+esac
