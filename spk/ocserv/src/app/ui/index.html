@@ -77,12 +77,6 @@ select.fi{appearance:auto}
 .btn-reset{padding:5px 28px;border:1px solid #c0c0c0;background:#fff;color:#333;border-radius:30px;font-size:12px;cursor:pointer}
 .btn-reset:hover{background:#efefef}
 
-/* --- Users inline add form --- */
-.addrow{display:none;padding:7px 10px;border-top:1px solid #d8d8d8;background:#f5f5f5;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
-.addrow.open{display:flex}
-.add-fi{height:24px;border:1px solid #bbb;padding:0 6px;font-size:12px;border-radius:2px;background:#fff;color:#333}
-.add-fi:focus{outline:none;border-color:#0068b5}
-
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
 .dg{background:#1a9e5a}
 .dr{background:#cc3333}
@@ -99,9 +93,6 @@ select.fi{appearance:auto}
   <div class="nav"    id="n-ss"  onclick="show('ss')"><i class="ti ti-plug-connected"   aria-hidden="true"></i> Список подключений</div>
   <div class="nav"    id="n-lg"  onclick="show('lg')"><i class="ti ti-file-text"         aria-hidden="true"></i> Журнал</div>
   <div class="nav"    id="n-cfg" onclick="show('cfg')"><i class="ti ti-settings"         aria-hidden="true"></i> Настройки</div>
-  <div class="sb-sep"></div>
-  <div class="sb-grp">Пользователи</div>
-  <div class="nav"    id="n-us"  onclick="show('us')"><i class="ti ti-users"             aria-hidden="true"></i> Локальные пользователи</div>
 </div>
 
 <!-- ===== CONTENT ===== -->
@@ -212,25 +203,6 @@ select.fi{appearance:auto}
   </div>
 </div>
 
-<!-- USERS -->
-<div class="sec" id="sec-us">
-  <div class="tb">
-    <button class="bt" onclick="openAdd()">Добавить</button>
-    <button class="bt" id="btn-del" disabled onclick="delUser()">Удалить</button>
-  </div>
-  <div class="sc"><table>
-    <thead><tr><th>Пользователь</th></tr></thead>
-    <tbody id="us-body"></tbody>
-  </table></div>
-  <div class="addrow" id="add-form">
-    <span style="font-size:12px;color:#555;white-space:nowrap">Новый пользователь:</span>
-    <input class="add-fi" id="add-u" placeholder="Имя пользователя" style="width:155px">
-    <input class="add-fi" id="add-p" type="password" placeholder="Пароль" style="width:130px">
-    <button class="bt bt-pri" onclick="confirmAdd()">Сохранить</button>
-    <button class="bt" onclick="closeAdd()">Отмена</button>
-  </div>
-  <div class="bb"><span id="us-cnt">0 пользователей</span></div>
-</div>
 
 </div><!-- .ct -->
 </div><!-- .app -->
@@ -278,19 +250,6 @@ function loadSessions(list) {
       </tr>`).join('');
   }
   cnt('ss-body','ss-cnt','подключ.');
-}
-
-async function loadUsers() {
-  const r = await get('users');
-  const users = r.users || [];
-  const tb = document.getElementById('us-body');
-  if (!users.length) {
-    tb.innerHTML = '<tr><td style="text-align:center;color:#aaa;padding:20px">Нет локальных пользователей</td></tr>';
-  } else {
-    tb.innerHTML = users.map(u =>
-      `<tr class="tr" onclick="sel(this,'btn-del')"><td>${esc(u)}</td></tr>`).join('');
-  }
-  document.getElementById('us-cnt').textContent = users.length + ' пользователей';
 }
 
 async function loadLog() {
@@ -349,11 +308,9 @@ function show(id) {
   document.getElementById('sec-'+id).classList.add('on');
   document.getElementById('n-'+id).classList.add('on');
   selEl = null; selBt = null;
-  ['btn-dc','btn-del'].forEach(b => { const el = document.getElementById(b); if (el) el.disabled = true; });
-  if (id === 'ov')  loadOverview();
-  if (id === 'ss')  loadOverview();
-  if (id === 'lg')  loadLog();
-  if (id === 'us')  loadUsers();
+  const dc = document.getElementById('btn-dc'); if (dc) dc.disabled = true;
+  if (id === 'ov' || id === 'ss') loadOverview();
+  if (id === 'lg') loadLog();
 }
 
 async function disconnect() {
@@ -377,28 +334,6 @@ function filterTb(tbId, q, cntId, suf) {
 function cnt(tbId, cntId, suf) {
   document.getElementById(cntId).textContent =
     document.getElementById(tbId).querySelectorAll('tr').length + ' ' + suf;
-}
-
-function openAdd()  { document.getElementById('add-form').classList.add('open'); document.getElementById('add-u').focus(); }
-function closeAdd() { document.getElementById('add-form').classList.remove('open'); document.getElementById('add-u').value = ''; document.getElementById('add-p').value = ''; }
-
-async function confirmAdd() {
-  const user = document.getElementById('add-u').value.trim();
-  const pass = document.getElementById('add-p').value;
-  if (!user) { document.getElementById('add-u').focus(); return; }
-  if (!pass) { document.getElementById('add-p').focus(); return; }
-  const r = await post('adduser', {user, pass});
-  if (r.ok) { closeAdd(); loadUsers(); }
-  else alert('Ошибка: ' + (r.error || 'неизвестная ошибка'));
-}
-
-async function delUser() {
-  if (!selEl || selBt !== 'btn-del') return;
-  const user = selEl.querySelector('td').textContent;
-  if (!confirm('Удалить пользователя ' + user + '?')) return;
-  const r = await post('deluser', {user});
-  if (r.ok) { selEl = null; document.getElementById('btn-del').disabled = true; loadUsers(); }
-  else alert('Ошибка: ' + (r.error || 'неизвестная ошибка'));
 }
 
 function esc(s) {
