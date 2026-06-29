@@ -55,11 +55,9 @@ postinst() {
 
         RADIUS_HOST="${wizard_radius_host:-127.0.0.1}"
         RADIUS_AUTH_PORT="${wizard_radius_auth_port:-1812}"
-        RADIUS_ACCT_PORT="${wizard_radius_acct_port:-1813}"
 
         sed -i "s|@@RADIUS_HOST@@|${RADIUS_HOST}|g"           "${RADIUS_CFG}"
         sed -i "s|@@RADIUS_AUTH_PORT@@|${RADIUS_AUTH_PORT}|g" "${RADIUS_CFG}"
-        sed -i "s|@@RADIUS_ACCT_PORT@@|${RADIUS_ACCT_PORT}|g" "${RADIUS_CFG}"
         sed -i "s|@@RADIUS_CONFIG@@|${RADIUS_CFG}|g"           "${RADIUS_CFG}"
     fi
 
@@ -68,13 +66,14 @@ postinst() {
     if [ ! -f "${RADIUS_SERVERS}" ]; then
         RADIUS_HOST="${wizard_radius_host:-}"
         RADIUS_AUTH_PORT="${wizard_radius_auth_port:-1812}"
-        RADIUS_ACCT_PORT="${wizard_radius_acct_port:-1813}"
         RADIUS_SECRET="${wizard_radius_secret:-changeme}"
         RADIUS_NAS_ID="${wizard_radius_nas_id:-}"
 
         if [ -n "${RADIUS_HOST}" ]; then
-            printf '%s:%s:%s\t%s' \
-                "${RADIUS_HOST}" "${RADIUS_AUTH_PORT}" "${RADIUS_ACCT_PORT}" \
+            # Format: <host>:<auth_port>    <secret>    [nas-id]
+            # Accounting is omitted — not supported on Synology NAS.
+            printf '%s:%s\t%s' \
+                "${RADIUS_HOST}" "${RADIUS_AUTH_PORT}" \
                 "${RADIUS_SECRET}" > "${RADIUS_SERVERS}"
             [ -n "${RADIUS_NAS_ID}" ] && printf '\t%s' "${RADIUS_NAS_ID}" >> "${RADIUS_SERVERS}"
             printf '\n' >> "${RADIUS_SERVERS}"

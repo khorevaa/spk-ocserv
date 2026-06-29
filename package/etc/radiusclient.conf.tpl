@@ -5,8 +5,7 @@
 # RADIUS authentication server
 authserver    @@RADIUS_HOST@@:@@RADIUS_AUTH_PORT@@
 
-# RADIUS accounting server (set to same host or leave as authserver)
-acctserver    @@RADIUS_HOST@@:@@RADIUS_ACCT_PORT@@
+# Accounting is disabled — Synology NAS does not support RADIUS accounting.
 
 # Shared secret (must match the secret configured on the RADIUS server)
 servers       /var/packages/ocserv/var/etc/radius.servers

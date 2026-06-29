@@ -95,17 +95,6 @@
         ]
       },
       {
-        "type": "textfield",
-        "desc": "RADIUS accounting port (default: 1813). Set to 0 to disable accounting.",
-        "subitems": [
-          {
-            "key": "wizard_radius_acct_port",
-            "desc": "Accounting Port",
-            "defaultValue": "1813"
-          }
-        ]
-      },
-      {
         "type": "password",
         "desc": "Shared secret configured on your RADIUS server for this NAS client.",
         "subitems": [
