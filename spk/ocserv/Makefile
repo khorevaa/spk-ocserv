@@ -20,6 +20,8 @@ SERVICE_PORT         = 4433
 SERVICE_PORT_PROTOCOL = https
 SERVICE_PORT_TITLE   = OpenConnect VPN
 
+DSM_UI_CONFIG        = src/app/config
+
 CONF_DIR             = src/conf
 FWPORTS              = src/ocserv.sc
 WIZARDS_TEMPLATES_DIR = src/wizard_templates
@@ -40,3 +42,7 @@ ocserv_extra_install:
 	@install -m 640 src/ocserv.conf.tpl          $(STAGING_DIR)/etc/ocserv.conf.tpl
 	@install -m 640 src/radiusclient.conf.tpl     $(STAGING_DIR)/etc/radiusclient.conf.tpl
 	@install -m 644 src/environment-variables     $(STAGING_DIR)/var/environment-variables
+	@install -m 755 -d $(STAGING_DIR)/ui/cgi-bin
+	@install -m 755 -d $(STAGING_DIR)/ui/images
+	@install -m 644 src/app/ui/index.html         $(STAGING_DIR)/ui/index.html
+	@install -m 755 src/app/ui/cgi-bin/api.sh     $(STAGING_DIR)/ui/cgi-bin/api.sh

@@ -9,11 +9,15 @@ LOG_DIR="${VAR_DIR}/log"
 CFG_FILE="${ETC_DIR}/ocserv.conf"
 RADIUS_CFG="${ETC_DIR}/radiusclient.conf"
 RADIUS_SERVERS="${ETC_DIR}/radius.servers"
-PASSWD_FILE="${LIB_DIR}/ocpasswd"
+PASSWD_FILE="${ETC_DIR}/ocpasswd"
 
 INST_ETC="/var/packages/${SYNOPKG_PKGNAME}/etc"
 INST_VARIABLES="${INST_ETC}/installer-variables"
 ENV_VARIABLES="${SYNOPKG_PKGVAR}/environment-variables"
+
+UI_DIR="${SYNOPKG_PKGDEST}/ui"
+ADMIN_PORT=8880
+HTTPD_PID="${VAR_DIR}/httpd.pid"
 
 SVC_BACKGROUND=yes
 SVC_WRITE_PID=yes
@@ -90,6 +94,23 @@ export_variables_from_file ()
     fi
 }
 
+_start_httpd ()
+{
+    if command -v python3 > /dev/null 2>&1; then
+        python3 -m http.server --cgi --directory "${UI_DIR}" "${ADMIN_PORT}" \
+            > "${LOG_DIR}/httpd.log" 2>&1 &
+        echo $! > "${HTTPD_PID}"
+    fi
+}
+
+_stop_httpd ()
+{
+    if [ -f "${HTTPD_PID}" ]; then
+        kill "$(cat "${HTTPD_PID}")" 2>/dev/null || true
+        rm -f "${HTTPD_PID}"
+    fi
+}
+
 service_prestart ()
 {
     if [ ! -f "${CFG_FILE}" ]; then
@@ -97,11 +118,16 @@ service_prestart ()
         return 1
     fi
 
-    # Reload installer variables (e.g. VPN_PORT)
     export_variables_from_file "${INST_VARIABLES}"
-
-    # Allow user to override env vars at runtime
     export_variables_from_file "${ENV_VARIABLES}"
 
+    _stop_httpd
+    _start_httpd
+
     SERVICE_COMMAND="${SYNOPKG_PKGDEST}/bin/ocserv --config ${CFG_FILE} --foreground"
+}
+
+service_poststop ()
+{
+    _stop_httpd
 }

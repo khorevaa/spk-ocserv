@@ -1,0 +1,16 @@
+{
+  ".url": {
+    "com.synocommunity.packages.ocserv": {
+      "type": "url",
+      "icon": "images/ocserv-{0}.png",
+      "title": "OpenConnect VPN",
+      "desc": "OpenConnect VPN Server management",
+      "protocol": "http",
+      "port": "8880",
+      "url": "/",
+      "allUsers": false,
+      "grantPrivilege": "all",
+      "advanceGrantPrivilege": true
+    }
+  }
+}

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenConnect VPN</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,-apple-system,sans-serif);background:var(--surface-0,#f4f4f2);color:var(--text-primary,#1a1a18);font-size:14px;line-height:1.5}
+a{color:var(--text-accent,#185fa5)}
+
+/* Layout */
+header{background:var(--surface-2,#fff);border-bottom:0.5px solid var(--border,rgba(0,0,0,.12));padding:12px 20px;display:flex;align-items:center;gap:10px}
+header h1{font-size:15px;font-weight:500;color:var(--text-primary)}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg-accent,#e6f1fb);color:var(--text-accent,#185fa5);border:0.5px solid var(--border-accent,#85b7eb)}
+main{max-width:900px;margin:20px auto;padding:0 16px;display:grid;gap:14px}
+
+/* Cards */
+.card{background:var(--surface-2,#fff);border-radius:12px;border:0.5px solid var(--border,rgba(0,0,0,.12))}
+.card-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
+.card-head h2{font-size:13px;font-weight:500;color:var(--text-primary);display:flex;align-items:center;gap:6px}
+.card-body{padding:14px 16px}
+
+/* Status dot */
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-on{background:var(--fill-success,#1D9E75)}
+.dot-off{background:var(--fill-danger,#E24B4A)}
+
+/* Stats row */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--surface-1,#f4f4f2);border-radius:var(--radius,8px);padding:12px 14px}
+.stat-label{font-size:11px;color:var(--text-muted,#888);margin-bottom:4px}
+.stat-value{font-size:18px;font-weight:500;color:var(--text-primary)}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:7px 10px;font-size:11px;font-weight:500;color:var(--text-secondary,#5f5e5a);background:var(--surface-1,#f4f4f2);border-bottom:0.5px solid var(--border)}
+td{padding:8px 10px;border-bottom:0.5px solid var(--border,rgba(0,0,0,.08));color:var(--text-primary);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.empty{color:var(--text-muted);font-size:12px;text-align:center;padding:20px 0}
+
+/* Form */
+.form-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
+input[type=text],input[type=password]{padding:6px 10px;border:0.5px solid var(--border-strong,rgba(0,0,0,.2));border-radius:var(--radius);font-size:13px;background:var(--surface-2,#fff);color:var(--text-primary);flex:1;min-width:140px}
+input:focus{outline:none;border-color:var(--border-accent,#85b7eb);box-shadow:0 0 0 2px var(--bg-accent,#e6f1fb)}
+
+/* Buttons */
+button{padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong,rgba(0,0,0,.2));background:var(--surface-2,#fff);color:var(--text-primary);display:inline-flex;align-items:center;gap:5px}
+button:hover{background:var(--surface-1,#f4f4f2)}
+button:active{transform:scale(.98)}
+.btn-accent{background:var(--fill-accent,#378add);color:var(--on-accent,#fff);border-color:transparent}
+.btn-accent:hover{background:var(--fill-accent-hover,#185fa5)}
+.btn-danger{background:var(--bg-danger,#fcebeb);color:var(--text-danger,#A32D2D);border-color:var(--border-danger,#F09595)}
+.btn-danger:hover{background:var(--fill-danger,#E24B4A);color:#fff;border-color:transparent}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* Toast */
+.toast{font-size:12px;padding:7px 12px;border-radius:var(--radius);margin-top:10px;display:none}
+.toast-ok{background:var(--bg-success,#eaf3de);color:var(--text-success,#3B6D11);border:0.5px solid var(--border-success,#97c459)}
+.toast-err{background:var(--bg-danger,#fcebeb);color:var(--text-danger,#A32D2D);border:0.5px solid var(--border-danger,#F09595)}
+
+/* Log */
+pre{font-family:var(--font-mono,monospace);font-size:11px;background:var(--surface-1,#f4f4f2);border-radius:var(--radius);padding:10px;white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto;color:var(--text-secondary)}
+
+/* Spinner */
+.spin{animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<h2 class="sr-only" style="position:absolute;left:-9999px">OpenConnect VPN server management</h2>
+
+<header>
+  <i class="ti ti-shield-lock" style="font-size:20px;color:var(--text-accent,#185fa5)" aria-hidden="true"></i>
+  <h1>OpenConnect VPN</h1>
+  <span class="tag">ocserv 1.5.0</span>
+  <div style="margin-left:auto">
+    <button onclick="refresh()" id="btn-refresh">
+      <i class="ti ti-refresh" aria-hidden="true"></i> Refresh
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Status</div>
+      <div class="stat-value" id="stat-status" style="display:flex;align-items:center;gap:6px">
+        <span class="dot dot-off" id="dot-status"></span>
+        <span id="txt-status">—</span>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Active sessions</div>
+      <div class="stat-value" id="stat-sessions">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">VPN port</div>
+      <div class="stat-value" id="stat-port">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Auth method</div>
+      <div class="stat-value" style="font-size:14px" id="stat-auth">—</div>
+    </div>
+  </div>
+
+  <!-- Sessions -->
+  <div class="card">
+    <div class="card-head">
+      <h2><i class="ti ti-users" aria-hidden="true"></i> Active sessions</h2>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table>
+        <thead><tr><th>Username</th><th>VPN IP</th><th>Connected since</th><th></th></tr></thead>
+        <tbody id="sessions-body">
+          <tr><td colspan="4" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users -->
+  <div class="card">
+    <div class="card-head">
+      <h2><i class="ti ti-user-circle" aria-hidden="true"></i> Local users</h2>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table>
+        <thead><tr><th>Username</th><th></th></tr></thead>
+        <tbody id="users-body">
+          <tr><td colspan="2" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:12px 16px;border-top:0.5px solid var(--border)">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Add a local user</div>
+      <div class="form-row" style="margin-top:0;padding-top:0;border-top:none">
+        <input type="text"     id="new-user" placeholder="Username" style="max-width:180px">
+        <input type="password" id="new-pass" placeholder="Password"  style="max-width:180px">
+        <button class="btn-accent" onclick="addUser()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add user
+        </button>
+      </div>
+      <div class="toast" id="user-toast"></div>
+    </div>
+  </div>
+
+  <!-- Config -->
+  <div class="card">
+    <div class="card-head">
+      <h2><i class="ti ti-settings" aria-hidden="true"></i> Configuration</h2>
+      <a href="#" style="font-size:12px;color:var(--text-accent)" id="cfg-path"></a>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><th style="width:160px">Config file</th><td id="cfg-file" style="font-family:var(--font-mono,monospace);font-size:11px">—</td></tr>
+        <tr><th>Auth method</th><td id="cfg-auth">—</td></tr>
+        <tr><th>VPN subnet</th><td id="cfg-net">—</td></tr>
+        <tr><th>DNS servers</th><td id="cfg-dns">—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card">
+    <div class="card-head">
+      <h2><i class="ti ti-terminal-2" aria-hidden="true"></i> Log</h2>
+      <button onclick="loadLog()" class="btn-sm">
+        <i class="ti ti-refresh" aria-hidden="true"></i> Refresh
+      </button>
+    </div>
+    <div class="card-body">
+      <pre id="log-box">Loading…</pre>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const BASE = '/cgi-bin/api.sh';
+const post = (action, body) => fetch(BASE + '?action=' + action,
+  body ? {method:'POST', body: new URLSearchParams(body)} : undefined
+).then(r => r.json()).catch(() => ({error:'Connection failed'}));
+
+async function refresh() {
+  const btn = document.getElementById('btn-refresh');
+  btn.innerHTML = '<i class="ti ti-refresh spin" aria-hidden="true"></i> Refresh';
+  btn.disabled = true;
+
+  const s = await post('status');
+
+  const on = !!s.running;
+  document.getElementById('dot-status').className = 'dot ' + (on ? 'dot-on' : 'dot-off');
+  document.getElementById('txt-status').textContent  = on ? 'Running' : 'Stopped';
+  document.getElementById('stat-sessions').textContent = s.sessions ? s.sessions.length : '0';
+  document.getElementById('stat-port').textContent = s.port || '—';
+  document.getElementById('stat-auth').textContent = authLabel(s.auth);
+  document.getElementById('cfg-file').textContent = s.config || '—';
+  document.getElementById('cfg-auth').textContent = authLabel(s.auth);
+  document.getElementById('cfg-net').textContent  = s.network || '—';
+  document.getElementById('cfg-dns').textContent  = s.dns     || '—';
+
+  renderSessions(s.sessions || []);
+  await Promise.all([loadUsers(), loadLog()]);
+
+  btn.innerHTML = '<i class="ti ti-refresh" aria-hidden="true"></i> Refresh';
+  btn.disabled = false;
+}
+
+function authLabel(a) {
+  if (!a) return '—';
+  if (a.startsWith('radius')) return 'RADIUS';
+  if (a.startsWith('plain'))  return 'Local (ocpasswd)';
+  return a;
+}
+
+function renderSessions(list) {
+  const tb = document.getElementById('sessions-body');
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="4" class="empty">No active sessions</td></tr>';
+    return;
+  }
+  tb.innerHTML = list.map(u => `
+    <tr>
+      <td><strong style="font-weight:500">${esc(u.user)}</strong></td>
+      <td style="font-family:var(--font-mono,monospace);font-size:11px">${esc(u.ip)}</td>
+      <td style="color:var(--text-muted)">${esc(u.since)}</td>
+      <td style="text-align:right">
+        <button class="btn-sm btn-danger" onclick="disconnect('${esc(u.user)}')">
+          <i class="ti ti-plug-x" aria-hidden="true"></i> Disconnect
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadUsers() {
+  const r = await post('users');
+  const tb = document.getElementById('users-body');
+  const users = r.users || [];
+  if (!users.length) {
+    tb.innerHTML = '<tr><td colspan="2" class="empty">No local users — add one below</td></tr>';
+    return;
+  }
+  tb.innerHTML = users.map(u => `
+    <tr>
+      <td>${esc(u)}</td>
+      <td style="text-align:right">
+        <button class="btn-sm btn-danger" onclick="delUser('${esc(u)}')">
+          <i class="ti ti-trash" aria-hidden="true"></i> Delete
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadLog() {
+  const r = await post('log');
+  document.getElementById('log-box').textContent = r.log || '(empty)';
+}
+
+async function addUser() {
+  const user = document.getElementById('new-user').value.trim();
+  const pass = document.getElementById('new-pass').value;
+  if (!user || !pass) return toast('Username and password are required.', false);
+  const r = await post('adduser', {user, pass});
+  toast(r.ok ? 'User added.' : 'Error: ' + r.error, !!r.ok);
+  if (r.ok) {
+    document.getElementById('new-user').value = '';
+    document.getElementById('new-pass').value = '';
+    loadUsers();
+  }
+}
+
+async function delUser(user) {
+  if (!confirm('Delete user ' + user + '?')) return;
+  const r = await post('deluser', {user});
+  toast(r.ok ? 'User deleted.' : 'Error: ' + r.error, !!r.ok);
+  if (r.ok) loadUsers();
+}
+
+async function disconnect(user) {
+  if (!confirm('Disconnect ' + user + '?')) return;
+  const r = await post('disconnect', {user});
+  toast(r.ok ? 'Session terminated.' : 'Error: ' + r.error, !!r.ok);
+  if (r.ok) refresh();
+}
+
+function toast(text, ok) {
+  const el = document.getElementById('user-toast');
+  el.textContent = text;
+  el.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+refresh();
+</script>
+</body>
+</html>
