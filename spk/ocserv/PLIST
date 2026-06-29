@@ -1,0 +1,8 @@
+bin:bin/ocserv
+bin:bin/ocpasswd
+bin:bin/occtl
+lib:lib/libopenconnect.so.5
+etc:etc/ocserv.conf.tpl
+var:var/log
+var:var/run
+var:var/lib/ocserv

@@ -1,0 +1,12 @@
+# Digests for ocserv-1.2.3.tar.xz
+# Generated with: sha1sum, sha256sum, md5sum
+# Update these checksums after downloading the source tarball from:
+#   ftp://ftp.infradead.org/pub/ocserv/ocserv-1.2.3.tar.xz
+#
+# To regenerate run:
+#   make -C cross/ocserv digests
+#
+# Placeholder — replace with actual checksums before building.
+ocserv-1.2.3.tar.xz SHA1    PLACEHOLDER_SHA1_40_HEX_CHARS_HERE_000000000
+ocserv-1.2.3.tar.xz SHA256  PLACEHOLDER_SHA256_64_HEX_CHARS_HERE_0000000000000000000000000000000
+ocserv-1.2.3.tar.xz MD5     PLACEHOLDER_MD5_32_HEX_CHARS_HERE_000
