@@ -1,10 +1,10 @@
-# Checksums for ocserv-1.2.3.tar.xz
-# Source: ftp://ftp.infradead.org/pub/ocserv/ocserv-1.2.3.tar.xz
+# Checksums for ocserv-1.5.0.tar.xz
+# Source: https://www.infradead.org/ocserv/download/ocserv-1.5.0.tar.xz
 #
 # Regenerate with:
 #   make -C cross/ocserv digests   (inside spksrc Docker container)
 #
 # TODO: replace placeholders with real checksums.
-ocserv-1.2.3.tar.xz SHA1    PLACEHOLDER
-ocserv-1.2.3.tar.xz SHA256  PLACEHOLDER
-ocserv-1.2.3.tar.xz MD5     PLACEHOLDER
+ocserv-1.5.0.tar.xz SHA1    PLACEHOLDER
+ocserv-1.5.0.tar.xz SHA256  PLACEHOLDER
+ocserv-1.5.0.tar.xz MD5     PLACEHOLDER

@@ -11,6 +11,8 @@ LOG_DIR="${VAR_DIR}/log"
 RUN_DIR="${VAR_DIR}/run"
 
 CFG_FILE="${ETC_DIR}/ocserv.conf"
+RADIUS_CFG="${ETC_DIR}/radiusclient.conf"
+RADIUS_SERVERS="${ETC_DIR}/radius.servers"
 PASSWD_FILE="${LIB_DIR}/ocpasswd"
 
 preinst() {
@@ -20,23 +22,70 @@ preinst() {
 postinst() {
     install -m 755 -d "${ETC_DIR}" "${LIB_DIR}" "${LOG_DIR}" "${RUN_DIR}"
 
-    # Write config from template only on fresh install
+    # ── Write ocserv.conf from template ───────────────────────────────────────
     if [ ! -f "${CFG_FILE}" ]; then
         cp "${PKG_DIR}/etc/ocserv.conf.tpl" "${CFG_FILE}"
 
-        # Substitute values collected by the installation wizard
-        VPN_PORT="${wizard_vpn_port:-443}"
+        VPN_PORT="${wizard_vpn_port:-4433}"
         SERVER_CERT="${wizard_server_cert:-}"
         SERVER_KEY="${wizard_server_key:-}"
         CA_CERT="${wizard_ca_cert:-}"
+        AUTH_METHOD="${wizard_auth_method:-local}"
 
-        sed -i "s|@@VPN_PORT@@|${VPN_PORT}|g"         "${CFG_FILE}"
-        sed -i "s|@@SERVER_CERT@@|${SERVER_CERT}|g"   "${CFG_FILE}"
-        sed -i "s|@@SERVER_KEY@@|${SERVER_KEY}|g"     "${CFG_FILE}"
-        sed -i "s|@@CA_CERT@@|${CA_CERT}|g"           "${CFG_FILE}"
+        sed -i "s|@@VPN_PORT@@|${VPN_PORT}|g"       "${CFG_FILE}"
+        sed -i "s|@@SERVER_CERT@@|${SERVER_CERT}|g" "${CFG_FILE}"
+        sed -i "s|@@SERVER_KEY@@|${SERVER_KEY}|g"   "${CFG_FILE}"
+        sed -i "s|@@CA_CERT@@|${CA_CERT}|g"         "${CFG_FILE}"
+        sed -i "s|@@RADIUS_CONFIG@@|${RADIUS_CFG}|g" "${CFG_FILE}"
+
+        if [ "${AUTH_METHOD}" = "radius" ]; then
+            # Activate RADIUS line, comment out local line
+            sed -i "s|@@AUTH_LOCAL_COMMENT@@|#|g"  "${CFG_FILE}"
+            sed -i "s|@@AUTH_RADIUS_COMMENT@@||g"  "${CFG_FILE}"
+        else
+            # Activate local line, comment out RADIUS line
+            sed -i "s|@@AUTH_LOCAL_COMMENT@@||g"   "${CFG_FILE}"
+            sed -i "s|@@AUTH_RADIUS_COMMENT@@|#|g" "${CFG_FILE}"
+        fi
     fi
 
-    # Create empty password file for plain-text auth
+    # ── Write radiusclient.conf from template ──────────────────────────────────
+    if [ ! -f "${RADIUS_CFG}" ]; then
+        cp "${PKG_DIR}/etc/radiusclient.conf.tpl" "${RADIUS_CFG}"
+
+        RADIUS_HOST="${wizard_radius_host:-127.0.0.1}"
+        RADIUS_AUTH_PORT="${wizard_radius_auth_port:-1812}"
+        RADIUS_ACCT_PORT="${wizard_radius_acct_port:-1813}"
+
+        sed -i "s|@@RADIUS_HOST@@|${RADIUS_HOST}|g"           "${RADIUS_CFG}"
+        sed -i "s|@@RADIUS_AUTH_PORT@@|${RADIUS_AUTH_PORT}|g" "${RADIUS_CFG}"
+        sed -i "s|@@RADIUS_ACCT_PORT@@|${RADIUS_ACCT_PORT}|g" "${RADIUS_CFG}"
+        sed -i "s|@@RADIUS_CONFIG@@|${RADIUS_CFG}|g"           "${RADIUS_CFG}"
+    fi
+
+    # ── Write RADIUS servers file ──────────────────────────────────────────────
+    # Format: <host>:<auth_port>:<acct_port>    <secret>    [nas-id]
+    if [ ! -f "${RADIUS_SERVERS}" ]; then
+        RADIUS_HOST="${wizard_radius_host:-}"
+        RADIUS_AUTH_PORT="${wizard_radius_auth_port:-1812}"
+        RADIUS_ACCT_PORT="${wizard_radius_acct_port:-1813}"
+        RADIUS_SECRET="${wizard_radius_secret:-changeme}"
+        RADIUS_NAS_ID="${wizard_radius_nas_id:-}"
+
+        if [ -n "${RADIUS_HOST}" ]; then
+            printf '%s:%s:%s\t%s' \
+                "${RADIUS_HOST}" "${RADIUS_AUTH_PORT}" "${RADIUS_ACCT_PORT}" \
+                "${RADIUS_SECRET}" > "${RADIUS_SERVERS}"
+            [ -n "${RADIUS_NAS_ID}" ] && printf '\t%s' "${RADIUS_NAS_ID}" >> "${RADIUS_SERVERS}"
+            printf '\n' >> "${RADIUS_SERVERS}"
+        else
+            # Placeholder so the file exists
+            printf '# <host>:<auth_port>:<acct_port>    <secret>\n' > "${RADIUS_SERVERS}"
+        fi
+        chmod 640 "${RADIUS_SERVERS}"
+    fi
+
+    # ── Create local password file ─────────────────────────────────────────────
     if [ ! -f "${PASSWD_FILE}" ]; then
         touch "${PASSWD_FILE}"
         chmod 640 "${PASSWD_FILE}"

@@ -9,20 +9,21 @@ on:
       ocserv_version:
         description: 'ocserv version to package'
         required: true
-        default: '1.2.3'
+        default: '1.5.0'
       spk_rev:
         description: 'SPK revision number'
         required: true
         default: '1'
 
 env:
-  OCSERV_VERSION: ${{ github.event.inputs.ocserv_version || '1.2.3' }}
+  OCSERV_VERSION: ${{ github.event.inputs.ocserv_version || '1.5.0' }}
   SPK_REV:        ${{ github.event.inputs.spk_rev || '1' }}
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 1: build ocserv binaries for each Synology architecture using spksrc Docker.
-  # Results are uploaded as artifacts and reused by the packaging job.
+  # Job 1: compile ocserv (+ radcli) for each Synology architecture
+  # using the official spksrc Docker toolchain.
+  # Source tarballs are fetched from the official infradead.org download server.
   # ─────────────────────────────────────────────────────────────────────────────
   build-binaries:
     name: Build binaries (${{ matrix.arch }})
@@ -32,54 +33,80 @@ jobs:
       matrix:
         include:
           - arch: x86_64
-            tc:   7.2
             spksrc_arch: x64
+            tcversion: "7.2"
           - arch: aarch64
-            tc:   7.2
             spksrc_arch: aarch64
+            tcversion: "7.2"
           - arch: armv8
-            tc:   7.2
             spksrc_arch: armv8
+            tcversion: "7.2"
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache spksrc build output
+      - name: Cache compiled binaries
         uses: actions/cache@v4
         id: cache-bins
         with:
           path: bins/${{ matrix.arch }}
-          key: ocserv-${{ env.OCSERV_VERSION }}-${{ matrix.arch }}-${{ matrix.tc }}-v1
+          key: ocserv-${{ env.OCSERV_VERSION }}-${{ matrix.arch }}-tc${{ matrix.tcversion }}-v1
 
       - name: Clone spksrc
         if: steps.cache-bins.outputs.cache-hit != 'true'
-        run: git clone --depth 1 https://github.com/SynoCommunity/spksrc.git /tmp/spksrc
+        run: |
+          git clone --depth 1 https://github.com/SynoCommunity/spksrc.git /tmp/spksrc
 
-      - name: Copy cross/ocserv into spksrc tree
+      - name: Inject cross packages into spksrc
         if: steps.cache-bins.outputs.cache-hit != 'true'
         run: |
+          cp -r cross/radcli /tmp/spksrc/cross/radcli
           cp -r cross/ocserv /tmp/spksrc/cross/ocserv
 
-      - name: Build using spksrc Docker toolchain
+      - name: Generate digests for radcli
         if: steps.cache-bins.outputs.cache-hit != 'true'
         run: |
-          cd /tmp/spksrc
           docker run --rm \
-            -v "$(pwd):/spksrc" \
-            -w /spksrc \
+            -v "/tmp/spksrc:/spksrc" -w /spksrc \
             ghcr.io/synocommunity/spksrc:latest \
-            make -C cross/ocserv ARCH=${{ matrix.spksrc_arch }} TCVERSION=${{ matrix.tc }}
+            make -C cross/radcli digests
 
-      - name: Extract compiled binaries
+      - name: Generate digests for ocserv
         if: steps.cache-bins.outputs.cache-hit != 'true'
         run: |
-          WORK=/tmp/spksrc/cross/ocserv/work*/install
+          docker run --rm \
+            -v "/tmp/spksrc:/spksrc" -w /spksrc \
+            ghcr.io/synocommunity/spksrc:latest \
+            make -C cross/ocserv digests
+
+      - name: Build radcli
+        if: steps.cache-bins.outputs.cache-hit != 'true'
+        run: |
+          docker run --rm \
+            -v "/tmp/spksrc:/spksrc" -w /spksrc \
+            ghcr.io/synocommunity/spksrc:latest \
+            make -C cross/radcli ARCH=${{ matrix.spksrc_arch }} TCVERSION=${{ matrix.tcversion }}
+
+      - name: Build ocserv
+        if: steps.cache-bins.outputs.cache-hit != 'true'
+        run: |
+          docker run --rm \
+            -v "/tmp/spksrc:/spksrc" -w /spksrc \
+            ghcr.io/synocommunity/spksrc:latest \
+            make -C cross/ocserv ARCH=${{ matrix.spksrc_arch }} TCVERSION=${{ matrix.tcversion }}
+
+      - name: Extract compiled binaries and libraries
+        if: steps.cache-bins.outputs.cache-hit != 'true'
+        run: |
+          INSTALL_ROOT="/tmp/spksrc/cross/ocserv/work-${{ matrix.spksrc_arch }}-${{ matrix.tcversion }}/install"
           mkdir -p bins/${{ matrix.arch }}/bin bins/${{ matrix.arch }}/lib
           for b in ocserv ocpasswd occtl; do
-            [ -f "${WORK}/usr/bin/${b}" ] && cp "${WORK}/usr/bin/${b}" bins/${{ matrix.arch }}/bin/
+            [ -f "${INSTALL_ROOT}/usr/bin/${b}" ] && \
+              install -m 755 "${INSTALL_ROOT}/usr/bin/${b}" bins/${{ matrix.arch }}/bin/
           done
-          # Bundle shared libraries (gnutls, libev, readline, ...)
-          find "${WORK}/usr/lib" -name '*.so*' -exec cp -a {} bins/${{ matrix.arch }}/lib/ \; 2>/dev/null || true
+          # Bundle shared libs (gnutls, libev, radcli, readline, zlib, ...)
+          find "${INSTALL_ROOT}/usr/lib" -name '*.so*' -not -type d \
+            -exec cp -a {} bins/${{ matrix.arch }}/lib/ \; 2>/dev/null || true
 
       - name: Upload binaries artifact
         uses: actions/upload-artifact@v4
@@ -89,7 +116,7 @@ jobs:
           retention-days: 7
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: take the pre-built binaries and assemble one SPK per architecture.
+  # Job 2: assemble SPK from pre-built binaries
   # ─────────────────────────────────────────────────────────────────────────────
   package:
     name: Package SPK (${{ matrix.arch }})
@@ -102,7 +129,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download binaries
+      - name: Download compiled binaries
         uses: actions/download-artifact@v4
         with:
           name: bins-${{ matrix.arch }}
@@ -127,7 +154,7 @@ jobs:
           path: dist/*.spk
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: publish all SPK files as a GitHub Release (only on tag push).
+  # Job 3: publish GitHub Release on version tag push
   # ─────────────────────────────────────────────────────────────────────────────
   release:
     name: Publish Release
@@ -151,25 +178,30 @@ jobs:
           body: |
             ## ocserv ${{ env.OCSERV_VERSION }} — Synology SPK
 
-            OpenConnect VPN server compatible with Cisco AnyConnect clients.
+            OpenConnect VPN server — compatible with Cisco AnyConnect SSL VPN clients.
+            Source: https://www.infradead.org/ocserv/download/ocserv-${{ env.OCSERV_VERSION }}.tar.xz
+
+            ### Authentication methods
+            - **Local** — password file managed with `ocpasswd`
+            - **RADIUS** — per-user auth via any RFC 2865-compliant RADIUS server (FreeRADIUS, etc.)
 
             ### Installation
-            1. Download the `.spk` file matching your NAS architecture.
-            2. In Package Center → Manual Install, upload the file.
-            3. Follow the setup wizard to configure port and TLS certificates.
+            1. Download the `.spk` matching your NAS architecture.
+            2. In **Package Center → Manual Install**, upload the file.
+            3. Follow the setup wizard (VPN port, TLS certificates, auth method).
 
-            ### Add VPN users
+            ### Add local VPN users
             ```sh
             /var/packages/ocserv/target/bin/ocpasswd \
                 -c /var/packages/ocserv/var/lib/ocpasswd <username>
             ```
 
             ### Architectures
-            | File | NAS models |
-            |------|-----------|
-            | `*_x86_64.spk` | DS918+, DS920+, DS923+, … |
-            | `*_aarch64.spk` | DS223, DS423+, … |
-            | `*_armv8.spk` | DS120j, DS220j, … |
+            | File | NAS models (examples) |
+            |------|-----------------------|
+            | `*_x86_64.spk`  | DS918+, DS920+, DS923+   |
+            | `*_aarch64.spk` | DS223, DS423+            |
+            | `*_armv8.spk`   | DS120j, DS220j           |
           files: dist/*.spk
           draft: false
           prerelease: false

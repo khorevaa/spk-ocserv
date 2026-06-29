@@ -1,10 +1,10 @@
 [
   {
-    "step_title": "OpenConnect VPN — Basic Setup",
+    "step_title": "OpenConnect VPN — Network",
     "items": [
       {
         "type": "textfield",
-        "desc": "VPN listening port (TCP and UDP). Port 443 is recommended for maximum client compatibility but may conflict with DSM HTTPS — change one of them in Control Panel → Network if needed.",
+        "desc": "VPN listening port (TCP and UDP). Port 443 offers maximum client compatibility but conflicts with DSM HTTPS — the default 4433 avoids this.",
         "subitems": [
           {
             "key": "wizard_vpn_port",
@@ -22,7 +22,7 @@
       },
       {
         "type": "textfield",
-        "desc": "Absolute path to the server TLS certificate file (PEM format). You can use a Synology-managed Let's Encrypt certificate or your own. Leave blank to configure manually after installation.",
+        "desc": "Absolute path to the server TLS certificate (PEM). You can use Synology's Let's Encrypt certificate from /usr/syno/etc/certificate/_archive/<id>/fullchain.pem.",
         "subitems": [
           {
             "key": "wizard_server_cert",
@@ -33,7 +33,7 @@
       },
       {
         "type": "textfield",
-        "desc": "Absolute path to the server TLS private key file (PEM format).",
+        "desc": "Absolute path to the server TLS private key (PEM).",
         "subitems": [
           {
             "key": "wizard_server_key",
@@ -41,14 +41,88 @@
             "defaultValue": ""
           }
         ]
+      }
+    ]
+  },
+  {
+    "step_title": "OpenConnect VPN — Authentication",
+    "items": [
+      {
+        "type": "singleselect",
+        "desc": "Choose how VPN users will authenticate.",
+        "subitems": [
+          {
+            "key": "wizard_auth_method",
+            "desc": "Authentication Method",
+            "defaultValue": "local",
+            "displayField": "name",
+            "valueField": "value",
+            "store": {
+              "data": [
+                { "name": "Local password file (ocpasswd)", "value": "local" },
+                { "name": "RADIUS server",                  "value": "radius" }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step_title": "OpenConnect VPN — RADIUS Settings",
+    "desc": "Fill in this page only if you selected RADIUS authentication. Leave it blank when using the local password file.",
+    "items": [
+      {
+        "type": "textfield",
+        "desc": "Hostname or IP address of your RADIUS server.",
+        "subitems": [
+          {
+            "key": "wizard_radius_host",
+            "desc": "RADIUS Server Host",
+            "defaultValue": ""
+          }
+        ]
       },
       {
         "type": "textfield",
-        "desc": "Absolute path to the CA certificate bundle (PEM format). Required for certificate-based client authentication; leave blank for password-only auth.",
+        "desc": "RADIUS authentication port (default: 1812).",
         "subitems": [
           {
-            "key": "wizard_ca_cert",
-            "desc": "CA Certificate Path",
+            "key": "wizard_radius_auth_port",
+            "desc": "Authentication Port",
+            "defaultValue": "1812"
+          }
+        ]
+      },
+      {
+        "type": "textfield",
+        "desc": "RADIUS accounting port (default: 1813). Set to 0 to disable accounting.",
+        "subitems": [
+          {
+            "key": "wizard_radius_acct_port",
+            "desc": "Accounting Port",
+            "defaultValue": "1813"
+          }
+        ]
+      },
+      {
+        "type": "password",
+        "desc": "Shared secret configured on your RADIUS server for this NAS client.",
+        "subitems": [
+          {
+            "key": "wizard_radius_secret",
+            "desc": "Shared Secret",
+            "defaultValue": ""
+          }
+        ]
+      },
+      {
+        "type": "textfield",
+        "desc": "NAS identifier sent to the RADIUS server (leave blank to use the NAS hostname).",
+        "subitems": [
+          {
+            "key": "wizard_radius_nas_id",
+            "desc": "NAS Identifier",
             "defaultValue": ""
           }
         ]
