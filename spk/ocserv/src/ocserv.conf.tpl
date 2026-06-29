@@ -9,34 +9,23 @@ udp-port = @@VPN_PORT@@
 # ── TLS certificates ──────────────────────────────────────────────────────────
 server-cert = @@SERVER_CERT@@
 server-key  = @@SERVER_KEY@@
-# ca-cert is required for certificate-based client authentication.
+# ca-cert is required only for certificate-based client authentication.
 # Uncomment and set path if you use client certificates or RADIUS with EAP-TLS.
-#ca-cert = @@CA_CERT@@
+#ca-cert =
 
 # ── Authentication ────────────────────────────────────────────────────────────
-# Choose ONE auth method below (comment out the others).
+# Exactly one auth line must be active.
 
-# --- Option 1: Local password file (default) ---------------------------------
-# Manage users with:
-#   /var/packages/ocserv/target/bin/ocpasswd \
-#       -c /var/packages/ocserv/var/lib/ocpasswd <username>
+# Option 1: Local password file
+# Manage users: ocpasswd -c /var/packages/ocserv/var/lib/ocpasswd <username>
 @@AUTH_LOCAL_COMMENT@@auth = "plain[passwd=/var/packages/ocserv/var/lib/ocpasswd]"
 
-# --- Option 2: RADIUS ---------------------------------------------------------
-# Requires a RADIUS server (e.g. FreeRADIUS).
-# Edit /etc/radcli/radiusclient.conf or point to your own config.
-# Per-user group assignment uses RADIUS Class attribute (25) or reply items.
+# Option 2: RADIUS (per-user, uses Class attribute for group assignment)
 @@AUTH_RADIUS_COMMENT@@auth = "radius[config=@@RADIUS_CONFIG@@,groupconfig=true]"
 
-# ── RADIUS server settings (used when auth = radius) ─────────────────────────
-# These are written to @@RADIUS_CONFIG@@ by the installer when RADIUS is chosen.
-# You can also edit that file directly.
-
 # ── Logging ───────────────────────────────────────────────────────────────────
-syslog        = false
-log-level     = 1
-# Syslog facility (kernel, user, daemon, mail, auth, local0..local7):
-#syslog-facility = daemon
+syslog    = false
+log-level = 1
 
 # ── Process / privilege ───────────────────────────────────────────────────────
 run-as-user  = nobody
@@ -48,15 +37,14 @@ dns          = 8.8.8.8
 dns          = 8.8.4.4
 
 # ── Routing ───────────────────────────────────────────────────────────────────
-# Push a default route so all client traffic goes through the VPN:
 route = default
 
 # ── Session limits ────────────────────────────────────────────────────────────
-max-clients       = 16
-max-same-clients  = 2
-keepalive         = 32400
-dpd               = 90
-mobile-dpd        = 1800
+max-clients      = 16
+max-same-clients = 2
+keepalive        = 32400
+dpd              = 90
+mobile-dpd       = 1800
 
 # ── TUN device ────────────────────────────────────────────────────────────────
 device = vpns

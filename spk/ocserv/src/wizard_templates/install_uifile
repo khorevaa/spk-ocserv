@@ -4,7 +4,7 @@
     "items": [
       {
         "type": "textfield",
-        "desc": "VPN listening port (TCP and UDP). Port 443 offers maximum client compatibility but conflicts with DSM HTTPS — the default 4433 avoids this.",
+        "desc": "VPN listening port (TCP and UDP). Port 443 offers maximum compatibility but conflicts with DSM HTTPS — the default 4433 avoids this.",
         "subitems": [
           {
             "key": "wizard_vpn_port",
@@ -59,7 +59,7 @@
             "valueField": "value",
             "store": {
               "data": [
-                { "name": "Local password file (ocpasswd)", "value": "local" },
+                { "name": "Local password file (ocpasswd)", "value": "local"  },
                 { "name": "RADIUS server",                  "value": "radius" }
               ]
             }
@@ -70,7 +70,7 @@
   },
   {
     "step_title": "OpenConnect VPN — RADIUS Settings",
-    "desc": "Fill in this page only if you selected RADIUS authentication. Leave it blank when using the local password file.",
+    "desc": "Fill in this page only if you selected RADIUS authentication.",
     "items": [
       {
         "type": "textfield",
