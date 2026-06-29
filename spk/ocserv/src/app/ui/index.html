@@ -286,12 +286,38 @@ function resetCfg() {
   document.getElementById('cfg-dns').value  = '8.8.8.8, 8.8.4.4';
   toggleRadius();
 }
-function applyCfg() {
+async function applyCfg() {
   const btn = document.getElementById('btn-apply');
   const t = btn.textContent;
-  btn.textContent = 'Сохранено ✓';
-  btn.style.background = '#1a9e5a'; btn.style.borderColor = '#157a45';
-  setTimeout(() => { btn.textContent = t; btn.style.background = ''; btn.style.borderColor = ''; }, 1600);
+  btn.textContent = 'Сохранение...';
+  btn.disabled = true;
+
+  const body = {
+    port:    document.getElementById('cfg-port').value,
+    auth:    document.getElementById('cfg-auth').value,
+    network: document.getElementById('cfg-net').value,
+    prefix:  document.getElementById('cfg-pfx').value,
+    dns:     document.getElementById('cfg-dns').value,
+  };
+  if (body.auth === 'radius') {
+    body.rhost    = document.getElementById('cfg-rhost').value;
+    body.rport    = document.getElementById('cfg-rport').value;
+    body.rsecret  = document.getElementById('cfg-rsec').value;
+    body.rnas     = document.getElementById('cfg-rnas').value;
+  }
+
+  const r = await post('saveconfig', body);
+  if (r.ok) {
+    btn.textContent = 'Сохранено ✓';
+    btn.style.background = '#1a9e5a'; btn.style.borderColor = '#157a45';
+    setTimeout(() => {
+      btn.textContent = t; btn.style.background = ''; btn.style.borderColor = '';
+      btn.disabled = false;
+    }, 1800);
+  } else {
+    btn.textContent = t; btn.disabled = false;
+    alert('Ошибка: ' + (r.error || 'неизвестная ошибка'));
+  }
 }
 
 let selEl = null, selBt = null;

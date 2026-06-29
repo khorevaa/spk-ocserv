@@ -129,6 +129,78 @@ disconnect)
     if [ $? -eq 0 ]; then json_ok; else json_err "${err}"; fi
     ;;
 
+saveconfig)
+    port=$(get_param port)
+    auth=$(get_param auth)
+    net=$(get_param network)
+    pfx=$(get_param prefix)
+    dns=$(get_param dns)
+    rhost=$(get_param rhost)
+    rport=$(get_param rport)
+    rsecret=$(get_param rsecret)
+    rnas=$(get_param rnas)
+
+    # Validate port: digits only, 1-65535
+    case "${port}" in
+        ''|*[!0-9]*) json_err "invalid port"; exit 0 ;;
+    esac
+    if [ "${port}" -lt 1 ] || [ "${port}" -gt 65535 ]; then
+        json_err "port out of range"; exit 0
+    fi
+
+    if [ ! -f "${CFG_FILE}" ]; then
+        json_err "config file not found"; exit 0
+    fi
+
+    # Port
+    sed -i "s/^tcp-port.*/tcp-port = ${port}/" "${CFG_FILE}"
+    sed -i "s/^udp-port.*/udp-port = ${port}/" "${CFG_FILE}"
+
+    # Auth method: toggle comment on auth lines
+    if [ "${auth}" = "local" ]; then
+        sed -i 's|^#\s*\(auth = "plain\)|\1|' "${CFG_FILE}"
+        sed -i 's|^\(auth = "radius\)|# \1|'  "${CFG_FILE}"
+    elif [ "${auth}" = "radius" ]; then
+        sed -i 's|^#\s*\(auth = "radius\)|\1|' "${CFG_FILE}"
+        sed -i 's|^\(auth = "plain\)|# \1|'    "${CFG_FILE}"
+    fi
+
+    # VPN subnet
+    if [ -n "${net}" ] && [ -n "${pfx}" ]; then
+        # Validate net is a dotted-quad
+        if echo "${net}" | grep -qE '^[0-9]{1,3}(\.[0-9]{1,3}){3}$'; then
+            sed -i "s|^ipv4-network.*|ipv4-network = ${net}/${pfx}|" "${CFG_FILE}"
+        fi
+    fi
+
+    # DNS servers: remove old lines, append new ones
+    if [ -n "${dns}" ]; then
+        sed -i '/^dns =/d' "${CFG_FILE}"
+        printf '%s' "${dns}" | tr ',' '\n' | while IFS= read -r d; do
+            d=$(printf '%s' "${d}" | tr -d ' ')
+            [ -n "${d}" ] && printf 'dns = %s\n' "${d}" >> "${CFG_FILE}"
+        done
+    fi
+
+    # RADIUS client config
+    if [ "${auth}" = "radius" ] && [ -n "${rhost}" ]; then
+        RADIUS_CFG="${PKG_ETC}/radiusclient.conf"
+        RADIUS_SERVERS="${PKG_ETC}/radius.servers"
+        if [ -f "${RADIUS_CFG}" ]; then
+            sed -i "s|^authserver.*|authserver    ${rhost}:${rport:-1812}|" "${RADIUS_CFG}"
+        fi
+        if [ -f "${RADIUS_SERVERS}" ]; then
+            printf '%s:%s\t%s' "${rhost}" "${rport:-1812}" "${rsecret:-changeme}" \
+                > "${RADIUS_SERVERS}"
+            [ -n "${rnas}" ] && printf '\t%s' "${rnas}" >> "${RADIUS_SERVERS}"
+            printf '\n' >> "${RADIUS_SERVERS}"
+            chmod 640 "${RADIUS_SERVERS}"
+        fi
+    fi
+
+    json_ok
+    ;;
+
 *)
     printf 'Content-Type: application/json\r\n\r\n{"error":"unknown action"}\n'
     ;;
