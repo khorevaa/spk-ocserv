@@ -20,6 +20,7 @@ SERVICE_PORT         = 4433
 SERVICE_PORT_PROTOCOL = https
 SERVICE_PORT_TITLE   = OpenConnect VPN
 
+CONF_DIR             = src/conf
 FWPORTS              = src/ocserv.sc
 WIZARDS_TEMPLATES_DIR = src/wizard_templates
 

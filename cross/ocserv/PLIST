@@ -1,0 +1,3 @@
+bin:bin/ocserv
+bin:bin/ocpasswd
+bin:bin/occtl

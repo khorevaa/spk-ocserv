@@ -1,0 +1,3 @@
+lnk:lib/libradcli.so
+lnk:lib/libradcli.so.4
+lib:lib/libradcli.so.4.2.0
