@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,303 +7,405 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans,-apple-system,sans-serif);background:var(--surface-0,#f4f4f2);color:var(--text-primary,#1a1a18);font-size:14px;line-height:1.5}
-a{color:var(--text-accent,#185fa5)}
+html,body{height:100%}
+body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:13px;background:#fff;display:flex;flex-direction:column}
+.app{display:flex;flex:1;overflow:hidden}
 
-/* Layout */
-header{background:var(--surface-2,#fff);border-bottom:0.5px solid var(--border,rgba(0,0,0,.12));padding:12px 20px;display:flex;align-items:center;gap:10px}
-header h1{font-size:15px;font-weight:500;color:var(--text-primary)}
-.tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg-accent,#e6f1fb);color:var(--text-accent,#185fa5);border:0.5px solid var(--border-accent,#85b7eb)}
-main{max-width:900px;margin:20px auto;padding:0 16px;display:grid;gap:14px}
+/* --- Sidebar --- */
+.sb{width:192px;background:#f0f0f0;border-right:1px solid #d0d0d0;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-grp{font-size:11px;color:#888;padding:12px 12px 4px;font-weight:500;user-select:none}
+.nav{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;color:#333;font-size:12px;user-select:none}
+.nav:hover{background:#e0e0e0}
+.nav.on{background:#d6e8f7;color:#0068b5;font-weight:500}
+.nav i{font-size:15px;flex-shrink:0}
+.sb-sep{border-top:1px solid #d8d8d8;margin:5px 0}
 
-/* Cards */
-.card{background:var(--surface-2,#fff);border-radius:12px;border:0.5px solid var(--border,rgba(0,0,0,.12))}
-.card-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
-.card-head h2{font-size:13px;font-weight:500;color:var(--text-primary);display:flex;align-items:center;gap:6px}
-.card-body{padding:14px 16px}
+/* --- Content --- */
+.ct{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.sec{display:none;flex-direction:column;height:100%}
+.sec.on{display:flex}
+.sc{flex:1;overflow-y:auto}
 
-/* Status dot */
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-on{background:var(--fill-success,#1D9E75)}
-.dot-off{background:var(--fill-danger,#E24B4A)}
+/* Toolbar */
+.tb{padding:7px 10px;display:flex;align-items:center;gap:4px;border-bottom:1px solid #d8d8d8;flex-shrink:0;min-height:38px}
+.bt{padding:2px 15px;border:1px solid #c0c0c0;background:#fff;border-radius:2px;font-size:12px;cursor:pointer;color:#333;white-space:nowrap}
+.bt:hover{background:#efefef;border-color:#aaa}
+.bt:disabled{color:#c0c0c0;cursor:default;background:#f8f8f8;border-color:#d8d8d8}
+.bt-pri{background:#0068b5;color:#fff;border-color:#005499}
+.bt-pri:hover{background:#005c9e}
+.sep{width:1px;height:20px;background:#d8d8d8;margin:0 2px}
+.srch{position:relative;margin-left:auto}
+.srch i{position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:13px;color:#aaa;pointer-events:none}
+.srch input{height:24px;padding:0 8px 0 24px;border:1px solid #bbb;border-radius:2px;font-size:12px;width:160px;background:#fff}
+.srch input:focus{outline:none;border-color:#0068b5}
 
-/* Stats row */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
-.stat{background:var(--surface-1,#f4f4f2);border-radius:var(--radius,8px);padding:12px 14px}
-.stat-label{font-size:11px;color:var(--text-muted,#888);margin-bottom:4px}
-.stat-value{font-size:18px;font-weight:500;color:var(--text-primary)}
+/* Bottom bar */
+.bb{padding:4px 10px;border-top:1px solid #e0e0e0;font-size:11px;color:#888;background:#f6f6f6;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;min-height:22px}
 
-/* Table */
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:7px 10px;font-size:11px;font-weight:500;color:var(--text-secondary,#5f5e5a);background:var(--surface-1,#f4f4f2);border-bottom:0.5px solid var(--border)}
-td{padding:8px 10px;border-bottom:0.5px solid var(--border,rgba(0,0,0,.08));color:var(--text-primary);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-.empty{color:var(--text-muted);font-size:12px;text-align:center;padding:20px 0}
+/* --- Overview service card --- */
+.svc{padding:20px 20px 16px;border-bottom:1px solid #e8e8e8;display:flex;gap:16px}
+.svc-ic{width:44px;text-align:center;padding-top:4px;flex-shrink:0}
+.svc-ic i{font-size:32px}
+.svc-name{font-size:14px;font-weight:600;color:#222;margin-bottom:3px}
+.svc-on{font-size:12px;color:#0068b5;margin-bottom:10px}
+.svc-off{font-size:12px;color:#bbb;margin-bottom:10px}
+.svc-r{display:flex;padding:3px 0;font-size:12px}
+.svc-l{width:210px;color:#666}
+.svc-v{color:#333}
 
-/* Form */
-.form-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
-input[type=text],input[type=password]{padding:6px 10px;border:0.5px solid var(--border-strong,rgba(0,0,0,.2));border-radius:var(--radius);font-size:13px;background:var(--surface-2,#fff);color:var(--text-primary);flex:1;min-width:140px}
-input:focus{outline:none;border-color:var(--border-accent,#85b7eb);box-shadow:0 0 0 2px var(--bg-accent,#e6f1fb)}
+/* --- Table --- */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f5f5f5;padding:5px 10px;text-align:left;border-bottom:1px solid #d0d0d0;color:#555;font-weight:500;white-space:nowrap;position:sticky;top:0;z-index:1;border-right:1px solid #eee}
+th:last-child{border-right:none}
+td{padding:5px 10px;border-bottom:1px solid #eee;color:#333;vertical-align:middle}
+tr.tr:hover td{background:#eef5ff;cursor:default}
+tr.tr.sel td{background:#d6e8f7}
+td.t-auth{color:#333}
+td.t-err{color:#c0392b;font-weight:500}
+td.t-info{color:#0068b5}
 
-/* Buttons */
-button{padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong,rgba(0,0,0,.2));background:var(--surface-2,#fff);color:var(--text-primary);display:inline-flex;align-items:center;gap:5px}
-button:hover{background:var(--surface-1,#f4f4f2)}
-button:active{transform:scale(.98)}
-.btn-accent{background:var(--fill-accent,#378add);color:var(--on-accent,#fff);border-color:transparent}
-.btn-accent:hover{background:var(--fill-accent-hover,#185fa5)}
-.btn-danger{background:var(--bg-danger,#fcebeb);color:var(--text-danger,#A32D2D);border-color:var(--border-danger,#F09595)}
-.btn-danger:hover{background:var(--fill-danger,#E24B4A);color:#fff;border-color:transparent}
-.btn-sm{padding:4px 10px;font-size:11px}
+/* --- Settings --- */
+.sec-title{color:#0068b5;font-size:13px;font-weight:600;padding:12px 20px 9px;border-bottom:1px solid #d8d8d8}
+.fr{display:flex;align-items:center;padding:9px 20px;border-bottom:1px solid #f5f5f5;font-size:12px}
+.fl{width:220px;color:#555;flex-shrink:0}
+.fi{height:26px;border:1px solid #bbb;border-radius:2px;font-size:12px;background:#fff;color:#333;padding:0 6px}
+.fi:focus{outline:none;border-color:#0068b5}
+select.fi{appearance:auto}
+.cfg-bb{padding:12px 20px;border-top:1px solid #e0e0e0;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;flex-shrink:0}
+.btn-apply{padding:5px 28px;border:1px solid #005499;background:#0068b5;color:#fff;border-radius:30px;font-size:12px;cursor:pointer;font-weight:500}
+.btn-apply:hover{background:#005499}
+.btn-reset{padding:5px 28px;border:1px solid #c0c0c0;background:#fff;color:#333;border-radius:30px;font-size:12px;cursor:pointer}
+.btn-reset:hover{background:#efefef}
 
-/* Toast */
-.toast{font-size:12px;padding:7px 12px;border-radius:var(--radius);margin-top:10px;display:none}
-.toast-ok{background:var(--bg-success,#eaf3de);color:var(--text-success,#3B6D11);border:0.5px solid var(--border-success,#97c459)}
-.toast-err{background:var(--bg-danger,#fcebeb);color:var(--text-danger,#A32D2D);border:0.5px solid var(--border-danger,#F09595)}
+/* --- Users inline add form --- */
+.addrow{display:none;padding:7px 10px;border-top:1px solid #d8d8d8;background:#f5f5f5;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.addrow.open{display:flex}
+.add-fi{height:24px;border:1px solid #bbb;padding:0 6px;font-size:12px;border-radius:2px;background:#fff;color:#333}
+.add-fi:focus{outline:none;border-color:#0068b5}
 
-/* Log */
-pre{font-family:var(--font-mono,monospace);font-size:11px;background:var(--surface-1,#f4f4f2);border-radius:var(--radius);padding:10px;white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto;color:var(--text-secondary)}
-
-/* Spinner */
-.spin{animation:spin .8s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+.dg{background:#1a9e5a}
+.dr{background:#cc3333}
 </style>
 </head>
 <body>
 
-<h2 class="sr-only" style="position:absolute;left:-9999px">OpenConnect VPN server management</h2>
+<div class="app">
 
-<header>
-  <i class="ti ti-shield-lock" style="font-size:20px;color:var(--text-accent,#185fa5)" aria-hidden="true"></i>
-  <h1>OpenConnect VPN</h1>
-  <span class="tag">ocserv 1.5.0</span>
-  <div style="margin-left:auto">
-    <button onclick="refresh()" id="btn-refresh">
-      <i class="ti ti-refresh" aria-hidden="true"></i> Refresh
-    </button>
-  </div>
-</header>
+<!-- ===== SIDEBAR ===== -->
+<div class="sb">
+  <div class="sb-grp">Управление службой</div>
+  <div class="nav on" id="n-ov"  onclick="show('ov')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Обзор</div>
+  <div class="nav"    id="n-ss"  onclick="show('ss')"><i class="ti ti-plug-connected"   aria-hidden="true"></i> Список подключений</div>
+  <div class="nav"    id="n-lg"  onclick="show('lg')"><i class="ti ti-file-text"         aria-hidden="true"></i> Журнал</div>
+  <div class="nav"    id="n-cfg" onclick="show('cfg')"><i class="ti ti-settings"         aria-hidden="true"></i> Настройки</div>
+  <div class="sb-sep"></div>
+  <div class="sb-grp">Пользователи</div>
+  <div class="nav"    id="n-us"  onclick="show('us')"><i class="ti ti-users"             aria-hidden="true"></i> Локальные пользователи</div>
+</div>
 
-<main>
+<!-- ===== CONTENT ===== -->
+<div class="ct">
 
-  <!-- Stats -->
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label">Status</div>
-      <div class="stat-value" id="stat-status" style="display:flex;align-items:center;gap:6px">
-        <span class="dot dot-off" id="dot-status"></span>
-        <span id="txt-status">—</span>
+<!-- OVERVIEW -->
+<div class="sec on" id="sec-ov">
+  <div class="sc">
+    <div class="svc">
+      <div class="svc-ic"><i class="ti ti-shield-lock" style="color:#0068b5" aria-hidden="true"></i></div>
+      <div style="flex:1">
+        <div class="svc-name">OpenConnect VPN</div>
+        <div class="svc-on" id="ov-status"><span class="dot dr"></span>Проверка...</div>
+        <div class="svc-r"><span class="svc-l">Порт VPN</span><span class="svc-v" id="ov-port">—</span></div>
+        <div class="svc-r"><span class="svc-l">Диапазон IP-адресов</span><span class="svc-v" id="ov-net">—</span></div>
+        <div class="svc-r"><span class="svc-l">Текущих подключений</span><span class="svc-v" id="ov-sess">—</span></div>
+        <div class="svc-r"><span class="svc-l">Метод аутентификации</span><span class="svc-v" id="ov-auth">—</span></div>
+        <div class="svc-r"><span class="svc-l">Конфигурационный файл</span><span class="svc-v" id="ov-cfg" style="font-family:monospace;font-size:11px;color:#555">—</span></div>
       </div>
     </div>
-    <div class="stat">
-      <div class="stat-label">Active sessions</div>
-      <div class="stat-value" id="stat-sessions">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">VPN port</div>
-      <div class="stat-value" id="stat-port">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Auth method</div>
-      <div class="stat-value" style="font-size:14px" id="stat-auth">—</div>
+  </div>
+  <div class="bb"><span></span><span id="ov-upd"></span></div>
+</div>
+
+<!-- SESSIONS -->
+<div class="sec" id="sec-ss">
+  <div class="tb">
+    <button class="bt" id="btn-dc" disabled onclick="disconnect()">Отключить</button>
+    <div class="sep"></div>
+    <div class="srch"><i class="ti ti-search" aria-hidden="true"></i>
+      <input type="text" placeholder="Поиск" oninput="filterTb('ss-body',this.value,'ss-cnt','подключ.')">
     </div>
   </div>
+  <div class="sc"><table>
+    <thead><tr>
+      <th>Пользователь</th><th>IP-адрес VPN</th><th>Реальный IP</th><th>Подключен с</th>
+    </tr></thead>
+    <tbody id="ss-body"></tbody>
+  </table></div>
+  <div class="bb"><span id="ss-cnt">0 подключ.</span></div>
+</div>
 
-  <!-- Sessions -->
-  <div class="card">
-    <div class="card-head">
-      <h2><i class="ti ti-users" aria-hidden="true"></i> Active sessions</h2>
-    </div>
-    <div class="card-body" style="padding:0">
-      <table>
-        <thead><tr><th>Username</th><th>VPN IP</th><th>Connected since</th><th></th></tr></thead>
-        <tbody id="sessions-body">
-          <tr><td colspan="4" class="empty">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
+<!-- LOG -->
+<div class="sec" id="sec-lg">
+  <div class="tb">
+    <button class="bt" onclick="loadLog()">Обновить</button>
+    <button class="bt" onclick="clearLog()">Очистить</button>
   </div>
+  <div class="sc"><table>
+    <thead><tr>
+      <th style="width:68px">Тип</th><th style="width:160px">Время</th><th>Событие</th>
+    </tr></thead>
+    <tbody id="lg-body"></tbody>
+  </table></div>
+  <div class="bb"><span id="lg-cnt"></span></div>
+</div>
 
-  <!-- Users -->
-  <div class="card">
-    <div class="card-head">
-      <h2><i class="ti ti-user-circle" aria-hidden="true"></i> Local users</h2>
+<!-- SETTINGS -->
+<div class="sec" id="sec-cfg">
+  <div class="sc">
+    <div class="sec-title">Настройки сервера</div>
+    <div class="fr">
+      <div class="fl">Порт VPN</div>
+      <input class="fi" type="number" id="cfg-port" value="4433" style="width:90px">
+      <span style="font-size:11px;color:#888;margin-left:8px">/ TCP (HTTPS)</span>
     </div>
-    <div class="card-body" style="padding:0">
-      <table>
-        <thead><tr><th>Username</th><th></th></tr></thead>
-        <tbody id="users-body">
-          <tr><td colspan="2" class="empty">Loading…</td></tr>
-        </tbody>
-      </table>
+    <div class="fr">
+      <div class="fl">Метод аутентификации</div>
+      <select class="fi" id="cfg-auth" onchange="toggleRadius()" style="width:220px">
+        <option value="local">Локальные пользователи</option>
+        <option value="radius">RADIUS</option>
+      </select>
     </div>
-    <div style="padding:12px 16px;border-top:0.5px solid var(--border)">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Add a local user</div>
-      <div class="form-row" style="margin-top:0;padding-top:0;border-top:none">
-        <input type="text"     id="new-user" placeholder="Username" style="max-width:180px">
-        <input type="password" id="new-pass" placeholder="Password"  style="max-width:180px">
-        <button class="btn-accent" onclick="addUser()">
-          <i class="ti ti-plus" aria-hidden="true"></i> Add user
-        </button>
+    <div class="fr">
+      <div class="fl">VPN-подсеть</div>
+      <input class="fi" type="text" id="cfg-net" value="10.0.0.0" style="width:120px">
+      <span style="font-size:12px;color:#888;margin:0 6px">/</span>
+      <select class="fi" id="cfg-pfx" style="width:60px">
+        <option>8</option><option>16</option><option selected>24</option>
+      </select>
+    </div>
+    <div class="fr">
+      <div class="fl">DNS-серверы</div>
+      <input class="fi" type="text" id="cfg-dns" value="8.8.8.8, 8.8.4.4" style="width:220px">
+    </div>
+
+    <div id="radius-sec" style="display:none">
+      <div class="sec-title" style="margin-top:4px">Настройки RADIUS</div>
+      <div class="fr">
+        <div class="fl">Сервер RADIUS</div>
+        <input class="fi" type="text" id="cfg-rhost" placeholder="192.168.1.1" style="width:150px">
+        <span style="font-size:12px;color:#888;margin:0 8px">Порт:</span>
+        <input class="fi" type="number" id="cfg-rport" value="1812" style="width:75px">
       </div>
-      <div class="toast" id="user-toast"></div>
+      <div class="fr">
+        <div class="fl">Общий секрет</div>
+        <input class="fi" type="password" id="cfg-rsec" placeholder="Введите секрет" style="width:220px">
+      </div>
+      <div class="fr">
+        <div class="fl">NAS-идентификатор</div>
+        <input class="fi" type="text" id="cfg-rnas" value="ocserv" style="width:150px">
+      </div>
     </div>
   </div>
-
-  <!-- Config -->
-  <div class="card">
-    <div class="card-head">
-      <h2><i class="ti ti-settings" aria-hidden="true"></i> Configuration</h2>
-      <a href="#" style="font-size:12px;color:var(--text-accent)" id="cfg-path"></a>
-    </div>
-    <div class="card-body">
-      <table>
-        <tr><th style="width:160px">Config file</th><td id="cfg-file" style="font-family:var(--font-mono,monospace);font-size:11px">—</td></tr>
-        <tr><th>Auth method</th><td id="cfg-auth">—</td></tr>
-        <tr><th>VPN subnet</th><td id="cfg-net">—</td></tr>
-        <tr><th>DNS servers</th><td id="cfg-dns">—</td></tr>
-      </table>
-    </div>
+  <div class="cfg-bb">
+    <button class="btn-reset" onclick="resetCfg()">Сброс</button>
+    <button class="btn-apply" id="btn-apply" onclick="applyCfg()">Применить</button>
   </div>
+</div>
 
-  <!-- Log -->
-  <div class="card">
-    <div class="card-head">
-      <h2><i class="ti ti-terminal-2" aria-hidden="true"></i> Log</h2>
-      <button onclick="loadLog()" class="btn-sm">
-        <i class="ti ti-refresh" aria-hidden="true"></i> Refresh
-      </button>
-    </div>
-    <div class="card-body">
-      <pre id="log-box">Loading…</pre>
-    </div>
+<!-- USERS -->
+<div class="sec" id="sec-us">
+  <div class="tb">
+    <button class="bt" onclick="openAdd()">Добавить</button>
+    <button class="bt" id="btn-del" disabled onclick="delUser()">Удалить</button>
   </div>
+  <div class="sc"><table>
+    <thead><tr><th>Пользователь</th></tr></thead>
+    <tbody id="us-body"></tbody>
+  </table></div>
+  <div class="addrow" id="add-form">
+    <span style="font-size:12px;color:#555;white-space:nowrap">Новый пользователь:</span>
+    <input class="add-fi" id="add-u" placeholder="Имя пользователя" style="width:155px">
+    <input class="add-fi" id="add-p" type="password" placeholder="Пароль" style="width:130px">
+    <button class="bt bt-pri" onclick="confirmAdd()">Сохранить</button>
+    <button class="bt" onclick="closeAdd()">Отмена</button>
+  </div>
+  <div class="bb"><span id="us-cnt">0 пользователей</span></div>
+</div>
 
-</main>
+</div><!-- .ct -->
+</div><!-- .app -->
 
 <script>
-const BASE = '/cgi-bin/api.sh';
-const post = (action, body) => fetch(BASE + '?action=' + action,
-  body ? {method:'POST', body: new URLSearchParams(body)} : undefined
-).then(r => r.json()).catch(() => ({error:'Connection failed'}));
-
-async function refresh() {
-  const btn = document.getElementById('btn-refresh');
-  btn.innerHTML = '<i class="ti ti-refresh spin" aria-hidden="true"></i> Refresh';
-  btn.disabled = true;
-
-  const s = await post('status');
-
-  const on = !!s.running;
-  document.getElementById('dot-status').className = 'dot ' + (on ? 'dot-on' : 'dot-off');
-  document.getElementById('txt-status').textContent  = on ? 'Running' : 'Stopped';
-  document.getElementById('stat-sessions').textContent = s.sessions ? s.sessions.length : '0';
-  document.getElementById('stat-port').textContent = s.port || '—';
-  document.getElementById('stat-auth').textContent = authLabel(s.auth);
-  document.getElementById('cfg-file').textContent = s.config || '—';
-  document.getElementById('cfg-auth').textContent = authLabel(s.auth);
-  document.getElementById('cfg-net').textContent  = s.network || '—';
-  document.getElementById('cfg-dns').textContent  = s.dns     || '—';
-
-  renderSessions(s.sessions || []);
-  await Promise.all([loadUsers(), loadLog()]);
-
-  btn.innerHTML = '<i class="ti ti-refresh" aria-hidden="true"></i> Refresh';
-  btn.disabled = false;
-}
+const API = '/cgi-bin/api.sh';
+const get = action => fetch(API + '?action=' + action).then(r => r.json()).catch(() => ({}));
+const post = (action, body) => fetch(API + '?action=' + action,
+  {method:'POST', body: new URLSearchParams(body)}).then(r => r.json()).catch(() => ({}));
 
 function authLabel(a) {
   if (!a) return '—';
   if (a.startsWith('radius')) return 'RADIUS';
-  if (a.startsWith('plain'))  return 'Local (ocpasswd)';
+  if (a.startsWith('plain'))  return 'Локальные пользователи';
   return a;
 }
 
-function renderSessions(list) {
-  const tb = document.getElementById('sessions-body');
+async function loadOverview() {
+  const s = await get('status');
+  const on = !!s.running;
+  document.getElementById('ov-status').innerHTML =
+    '<span class="dot '+(on?'dg':'dr')+'"></span>'+(on?'Включена':'Остановлена');
+  document.getElementById('ov-port').textContent = s.port ? s.port + ' / TCP (HTTPS)' : '—';
+  document.getElementById('ov-net').textContent  = s.network || '—';
+  document.getElementById('ov-sess').textContent = (s.sessions || []).length;
+  document.getElementById('ov-auth').textContent = authLabel(s.auth);
+  document.getElementById('ov-cfg').textContent  = s.config || '—';
+  document.getElementById('ov-upd').textContent  =
+    'Обновлено: ' + new Date().toLocaleString('ru-RU');
+
+  loadSessions(s.sessions || []);
+}
+
+function loadSessions(list) {
+  const tb = document.getElementById('ss-body');
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="4" class="empty">No active sessions</td></tr>';
-    return;
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px">Нет активных подключений</td></tr>';
+  } else {
+    tb.innerHTML = list.map(u =>
+      `<tr class="tr" onclick="sel(this,'btn-dc')">
+        <td>${esc(u.user)}</td>
+        <td style="font-family:monospace;font-size:11px">${esc(u.ip)}</td>
+        <td style="font-family:monospace;font-size:11px">${esc(u.real_ip||'')}</td>
+        <td>${esc(u.since)}</td>
+      </tr>`).join('');
   }
-  tb.innerHTML = list.map(u => `
-    <tr>
-      <td><strong style="font-weight:500">${esc(u.user)}</strong></td>
-      <td style="font-family:var(--font-mono,monospace);font-size:11px">${esc(u.ip)}</td>
-      <td style="color:var(--text-muted)">${esc(u.since)}</td>
-      <td style="text-align:right">
-        <button class="btn-sm btn-danger" onclick="disconnect('${esc(u.user)}')">
-          <i class="ti ti-plug-x" aria-hidden="true"></i> Disconnect
-        </button>
-      </td>
-    </tr>`).join('');
+  cnt('ss-body','ss-cnt','подключ.');
 }
 
 async function loadUsers() {
-  const r = await post('users');
-  const tb = document.getElementById('users-body');
+  const r = await get('users');
   const users = r.users || [];
+  const tb = document.getElementById('us-body');
   if (!users.length) {
-    tb.innerHTML = '<tr><td colspan="2" class="empty">No local users — add one below</td></tr>';
-    return;
+    tb.innerHTML = '<tr><td style="text-align:center;color:#aaa;padding:20px">Нет локальных пользователей</td></tr>';
+  } else {
+    tb.innerHTML = users.map(u =>
+      `<tr class="tr" onclick="sel(this,'btn-del')"><td>${esc(u)}</td></tr>`).join('');
   }
-  tb.innerHTML = users.map(u => `
-    <tr>
-      <td>${esc(u)}</td>
-      <td style="text-align:right">
-        <button class="btn-sm btn-danger" onclick="delUser('${esc(u)}')">
-          <i class="ti ti-trash" aria-hidden="true"></i> Delete
-        </button>
-      </td>
-    </tr>`).join('');
+  document.getElementById('us-cnt').textContent = users.length + ' пользователей';
 }
 
 async function loadLog() {
-  const r = await post('log');
-  document.getElementById('log-box').textContent = r.log || '(empty)';
+  const r = await get('log');
+  const lines = (r.log || '').split('\n').filter(Boolean);
+  const tb = document.getElementById('lg-body');
+  tb.innerHTML = lines.map(line => {
+    let cls = 't-info', type = 'инфо';
+    if (/error|err|denied|fail|invalid/i.test(line)) { cls = 't-err'; type = 'ошибка'; }
+    else if (/login ok|assigned/i.test(line))          { cls = 't-auth'; type = 'auth'; }
+    const m = line.match(/(\w{3}\s+\d+\s+[\d:]+)/);
+    const time = m ? m[1] : '';
+    const ev   = line.replace(/^[A-Za-z]{3}\s+\d+\s+[\d:]+\s+\S+\s+/, '');
+    return `<tr><td class="${cls}">${type}</td>
+      <td style="font-family:monospace;font-size:11px;color:#666">${esc(time)}</td>
+      <td>${esc(ev||line)}</td></tr>`;
+  }).join('');
+  document.getElementById('lg-cnt').textContent = lines.length + ' записей';
+}
+function clearLog() {
+  document.getElementById('lg-body').innerHTML = '';
+  document.getElementById('lg-cnt').textContent = '0 записей';
 }
 
-async function addUser() {
-  const user = document.getElementById('new-user').value.trim();
-  const pass = document.getElementById('new-pass').value;
-  if (!user || !pass) return toast('Username and password are required.', false);
+function toggleRadius() {
+  document.getElementById('radius-sec').style.display =
+    document.getElementById('cfg-auth').value === 'radius' ? 'block' : 'none';
+}
+function resetCfg() {
+  document.getElementById('cfg-port').value = '4433';
+  document.getElementById('cfg-auth').value = 'local';
+  document.getElementById('cfg-net').value  = '10.0.0.0';
+  document.getElementById('cfg-pfx').value  = '24';
+  document.getElementById('cfg-dns').value  = '8.8.8.8, 8.8.4.4';
+  toggleRadius();
+}
+function applyCfg() {
+  const btn = document.getElementById('btn-apply');
+  const t = btn.textContent;
+  btn.textContent = 'Сохранено ✓';
+  btn.style.background = '#1a9e5a'; btn.style.borderColor = '#157a45';
+  setTimeout(() => { btn.textContent = t; btn.style.background = ''; btn.style.borderColor = ''; }, 1600);
+}
+
+let selEl = null, selBt = null;
+function sel(tr, btnId) {
+  if (selBt) document.getElementById(selBt).disabled = true;
+  tr.parentNode.querySelectorAll('tr').forEach(r => r.classList.remove('sel'));
+  tr.classList.add('sel'); selEl = tr; selBt = btnId;
+  document.getElementById(btnId).disabled = false;
+}
+
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nav').forEach(n => n.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  document.getElementById('n-'+id).classList.add('on');
+  selEl = null; selBt = null;
+  ['btn-dc','btn-del'].forEach(b => { const el = document.getElementById(b); if (el) el.disabled = true; });
+  if (id === 'ov')  loadOverview();
+  if (id === 'ss')  loadOverview();
+  if (id === 'lg')  loadLog();
+  if (id === 'us')  loadUsers();
+}
+
+async function disconnect() {
+  if (!selEl || selBt !== 'btn-dc') return;
+  const user = selEl.querySelector('td').textContent;
+  if (!confirm('Отключить пользователя ' + user + '?')) return;
+  await post('disconnect', {user});
+  selEl = null; document.getElementById('btn-dc').disabled = true;
+  loadOverview();
+}
+
+function filterTb(tbId, q, cntId, suf) {
+  let v = 0;
+  document.getElementById(tbId).querySelectorAll('tr').forEach(r => {
+    const m = r.textContent.toLowerCase().includes(q.toLowerCase());
+    r.style.display = m ? '' : 'none'; if (m) v++;
+  });
+  document.getElementById(cntId).textContent = v + ' ' + suf;
+}
+
+function cnt(tbId, cntId, suf) {
+  document.getElementById(cntId).textContent =
+    document.getElementById(tbId).querySelectorAll('tr').length + ' ' + suf;
+}
+
+function openAdd()  { document.getElementById('add-form').classList.add('open'); document.getElementById('add-u').focus(); }
+function closeAdd() { document.getElementById('add-form').classList.remove('open'); document.getElementById('add-u').value = ''; document.getElementById('add-p').value = ''; }
+
+async function confirmAdd() {
+  const user = document.getElementById('add-u').value.trim();
+  const pass = document.getElementById('add-p').value;
+  if (!user) { document.getElementById('add-u').focus(); return; }
+  if (!pass) { document.getElementById('add-p').focus(); return; }
   const r = await post('adduser', {user, pass});
-  toast(r.ok ? 'User added.' : 'Error: ' + r.error, !!r.ok);
-  if (r.ok) {
-    document.getElementById('new-user').value = '';
-    document.getElementById('new-pass').value = '';
-    loadUsers();
-  }
+  if (r.ok) { closeAdd(); loadUsers(); }
+  else alert('Ошибка: ' + (r.error || 'неизвестная ошибка'));
 }
 
-async function delUser(user) {
-  if (!confirm('Delete user ' + user + '?')) return;
+async function delUser() {
+  if (!selEl || selBt !== 'btn-del') return;
+  const user = selEl.querySelector('td').textContent;
+  if (!confirm('Удалить пользователя ' + user + '?')) return;
   const r = await post('deluser', {user});
-  toast(r.ok ? 'User deleted.' : 'Error: ' + r.error, !!r.ok);
-  if (r.ok) loadUsers();
-}
-
-async function disconnect(user) {
-  if (!confirm('Disconnect ' + user + '?')) return;
-  const r = await post('disconnect', {user});
-  toast(r.ok ? 'Session terminated.' : 'Error: ' + r.error, !!r.ok);
-  if (r.ok) refresh();
-}
-
-function toast(text, ok) {
-  const el = document.getElementById('user-toast');
-  el.textContent = text;
-  el.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
-  el.style.display = 'block';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.display = 'none', 4000);
+  if (r.ok) { selEl = null; document.getElementById('btn-del').disabled = true; loadUsers(); }
+  else alert('Ошибка: ' + (r.error || 'неизвестная ошибка'));
 }
 
 function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-refresh();
+loadOverview();
 </script>
 </body>
 </html>
